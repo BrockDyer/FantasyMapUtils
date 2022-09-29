@@ -1,2 +1,2 @@
 # FantasyMapUtils
-A library of tools for creating robust and semi-realistic fantasy maps.
+A library of tools for creating interesting and semi-realistic fantasy maps.
