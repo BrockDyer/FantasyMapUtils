@@ -1,10 +1,10 @@
-﻿namespace MarketAreas;
+﻿namespace MarketAreas.Views;
 
-public partial class MainPage : ContentPage
+public partial class TemplatePage : ContentPage
 {
     int count = 0;
 
-    public MainPage()
+    public TemplatePage()
     {
         InitializeComponent();
     }
