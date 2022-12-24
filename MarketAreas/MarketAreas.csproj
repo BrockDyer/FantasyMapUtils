@@ -51,17 +51,22 @@
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0-preview2" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
+        <PackageReference Include="CommunityToolkit.Maui" Version="3.1.0" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="Drawables" />
       <Folder Include="ViewModels" />
       <Folder Include="Drawables\" />
+      <Folder Include="Views\Popups\" />
     </ItemGroup>
 
     <ItemGroup>
       <MauiXaml Update="Views\TemplatePage.xaml">
         <SubType>Designer</SubType>
+      </MauiXaml>
+      <MauiXaml Update="Views\Popups\PointInputPopup.xaml">
+        <SubType></SubType>
       </MauiXaml>
     </ItemGroup>
 
@@ -75,11 +80,16 @@
     <ItemGroup>
       <None Remove="Drawables\" />
       <None Remove="Resources\Images\sample_map.png" />
+      <None Remove="Views\Popups\" />
+      <None Remove="CommunityToolkit.Maui" />
     </ItemGroup>
     <ItemGroup>
       <MauiImage Remove="Resources\Images\dotnet_bot.svg" />
     </ItemGroup>
     <ItemGroup>
       <BundleResource Include="Resources\Images\dotnet_bot.svg" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\VoronoiModel\VoronoiModel.csproj" />
     </ItemGroup>
 </Project>

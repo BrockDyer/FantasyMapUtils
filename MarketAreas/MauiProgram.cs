@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics.Platform;
+using CommunityToolkit.Maui;
 
 using MarketAreas.Views;
 using MarketAreas.ViewModels;
-using Microsoft.Maui.Graphics.Platform;
 
 namespace MarketAreas;
 
@@ -13,6 +14,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

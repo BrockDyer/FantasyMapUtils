@@ -46,6 +46,7 @@
                 </FlexLayout>
 
                 <Button Text="Points Input"
+                        Clicked="OnPointsInputClicked"
                         Margin="5"/>
 
                 <Button Text="Layers"
