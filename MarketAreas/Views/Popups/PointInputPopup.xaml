@@ -4,25 +4,48 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MarketAreas.Views.Popups.PointInputPopup">
     <FlexLayout Direction="Column">
-        <Entry x:Name="PointNameEntry"
-               Completed="OnPointNameInput"
-               Placeholder="Enter point name" />
-        <Entry x:Name="PointWeightEntry"
-               Completed="OnPointWeightInput"
-               Placeholder="Enter point weight">
-            <!--<Entry.Behaviors>
-                <toolkit:NumericValidationBehavior
-                    InvalidStyle="{StaticResource InvalidEntry}"
-                    ValidStyle="{Static ValidEntry}"
-                    Flags="ValidateOnValueChanged" />
 
-            </Entry.Behaviors>-->
+        <HorizontalStackLayout>
+            <Label Text="Point Name"
+                   VerticalOptions="Center"
+                   Style="{StaticResource InputLabel}"/>
 
-        </Entry>
+            <Entry x:Name="PointNameEntry"
+                   Completed="OnPointNameInput"
+                   Placeholder="Enter point name" />
+
+        </HorizontalStackLayout>
+
+        <HorizontalStackLayout>
+            <Label Text="Point Weight"
+                   VerticalOptions="Center"
+                   Style="{StaticResource InputLabel}"/>
+
+            <Entry x:Name="PointWeightEntry"
+                   Completed="OnPointWeightInput"
+                   Placeholder="Enter point weight">
+
+                <!--<Entry.Behaviors>
+                    <toolkit:NumericValidationBehavior
+                        InvalidStyle="{StaticResource InvalidEntry}"
+                        ValidStyle="{Static ValidEntry}"
+                        Flags="ValidateOnValueChanged" />
+
+                </Entry.Behaviors>-->
+
+            </Entry>
+
+        </HorizontalStackLayout>
 
         <Button x:Name="AddPointButton"
                 Clicked="OnAddPointClicked"
-                Text="Add" />
+                Text="Add"
+                Style="{StaticResource ConfirmButton}"/>
+
+        <Button x:Name="CancelButton"
+                Clicked="OnCancelClicked"
+                Text="Cancel"
+                Style="{StaticResource CancelButton}"/>
 
     </FlexLayout>
 </toolkit:Popup>

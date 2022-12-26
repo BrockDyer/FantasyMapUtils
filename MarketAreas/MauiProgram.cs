@@ -3,7 +3,10 @@ using Microsoft.Maui.Graphics.Platform;
 using CommunityToolkit.Maui;
 
 using MarketAreas.Views;
+using MarketAreas.Views.Popups;
 using MarketAreas.ViewModels;
+using VoronoiModel;
+using VoronoiModel.Services;
 
 namespace MarketAreas;
 
@@ -29,8 +32,10 @@ public static class MauiProgram
 //#else
         builder.Services.AddSingleton<IImageLoadingService, PlatformImageLoadingService>();
 //#endif
+        builder.Services.AddSingleton<IVoronoiService, VoronoiService>();
         builder.Services.AddSingleton<MainPageViewModel>();
         builder.Services.AddSingleton<MainPage>();
+
         return builder.Build();
     }
 }

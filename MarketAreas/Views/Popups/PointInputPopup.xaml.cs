@@ -2,26 +2,45 @@
 using CommunityToolkit.Maui.Views;
 
 using VoronoiModel;
+using VoronoiModel.Services;
 
 namespace MarketAreas.Views.Popups;
 
 public partial class PointInputPopup : Popup
 {
-	public PointInputPopup()
+
+	private readonly IVoronoiService voronoiService;
+
+	public PointInputPopup(IVoronoiService voronoiService)
 	{
 		InitializeComponent();
+		this.voronoiService = voronoiService;
+	}
+
+	private void ClearEntries()
+	{
+		PointNameEntry.ClearValue(Entry.TextProperty);
+		PointWeightEntry.ClearValue(Entry.TextProperty);
 	}
 
 	private void OnAddPointClicked(object sender, EventArgs e)
 	{
 		var name = PointNameEntry.Text;
-		var weight = Decimal.Parse(PointWeightEntry.Text);
-		var point = new VoronoiPoint
+        var point = new VoronoiPoint
 		{
-			Name = name,
-			Weight = weight
+			Name = name
 		};
-		Debug.WriteLine(string.Format("Adding point {0}", point));
+
+        Decimal weight;
+        if (Decimal.TryParse(PointWeightEntry.Text, out weight))
+        {
+			point.Weight = weight;
+        }
+
+        Debug.WriteLine(string.Format("Adding point {0}", point));
+		voronoiService.AddPoint(point);
+		ClearEntries();
+		Reset();
 	}
 
 	private void OnPointNameInput(object sender, EventArgs e)
@@ -35,4 +54,6 @@ public partial class PointInputPopup : Popup
 		var weightEntry = (Entry)sender;
 		Debug.WriteLine(weightEntry.Text);
 	}
+
+	private void OnCancelClicked(object sender, EventArgs e) => Close();
 }

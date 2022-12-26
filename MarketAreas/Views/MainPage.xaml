@@ -3,11 +3,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:drawables="clr-namespace:MarketAreas.Drawables"
+             xmlns:viewmodel="clr-namespace:MarketAreas.ViewModels"
+             xmlns:model="clr-namespace:VoronoiModel;assembly=VoronoiModel"
+             x:DataType="viewmodel:MainPageViewModel"
              x:Class="MarketAreas.Views.MainPage">
-    <ContentPage.Resources>
-        <drawables:MapDrawable x:Key="MapDrawable" />
-
-    </ContentPage.Resources>
 
     <ContentPage.Content>
         <!--<Grid Padding="20">
@@ -55,12 +54,33 @@
                 <Button Text="Visualization Options"
                         Margin="5"/>
 
+                <Button Text="Start"
+                        Command="{Binding GetPointsCommand}"
+                        Clicked="OnStartClicked"
+                        Margin="5"/>
+
+                <CollectionView ItemsSource="{Binding VoronoiPoints}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:VoronoiPoint">
+                            <Label Text="Test"/>
+
+                        </DataTemplate>
+
+                    </CollectionView.ItemTemplate>
+
+                </CollectionView>
+
             </FlexLayout>
 
-            <!-- Map view -->
+            <!-- Visualization view -->
             <GraphicsView FlexLayout.Grow="1"
                           FlexLayout.Basis="400"
-                          Drawable="{StaticResource MapDrawable}"/>
+                          x:Name="VisualizationView">
+                <GraphicsView.Drawable>
+                    <drawables:MapDrawable VoronoiPoints="{Binding VoronoiPoints}"/>
+
+                </GraphicsView.Drawable>
+            </GraphicsView>
 
         </FlexLayout>
     </ContentPage.Content>
