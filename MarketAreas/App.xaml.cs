@@ -1,8 +1,10 @@
-﻿namespace MarketAreas;
+﻿using MarketAreas.Services;
+
+namespace MarketAreas;
 
 public partial class App : Application
 {
-    public App()
+    public App(IServiceProvider provider)
     {
         InitializeComponent();
 

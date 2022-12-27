@@ -45,7 +45,9 @@
                 </FlexLayout>
 
                 <Button Text="Points Input"
-                        Clicked="OnPointsInputClicked"
+                        x:Name="PointsInputButton"
+                        Command="{Binding DisplayPointInputPopupCommand}"
+                        CommandParameter="{Binding Source={RelativeSource Self}}"
                         Margin="5"/>
 
                 <Button Text="Layers"
@@ -55,31 +57,17 @@
                         Margin="5"/>
 
                 <Button Text="Start"
-                        Command="{Binding GetPointsCommand}"
+                        Command="{Binding StartCommand}"
                         Clicked="OnStartClicked"
                         Margin="5"/>
-
-                <CollectionView ItemsSource="{Binding VoronoiPoints}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="model:VoronoiPoint">
-                            <Label Text="Test"/>
-
-                        </DataTemplate>
-
-                    </CollectionView.ItemTemplate>
-
-                </CollectionView>
 
             </FlexLayout>
 
             <!-- Visualization view -->
             <GraphicsView FlexLayout.Grow="1"
                           FlexLayout.Basis="400"
-                          x:Name="VisualizationView">
-                <GraphicsView.Drawable>
-                    <drawables:MapDrawable VoronoiPoints="{Binding VoronoiPoints}"/>
-
-                </GraphicsView.Drawable>
+                          x:Name="VisualizationView"
+                          Drawable="{Binding MapDrawable}">
             </GraphicsView>
 
         </FlexLayout>

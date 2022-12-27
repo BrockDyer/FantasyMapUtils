@@ -15,36 +15,19 @@ namespace MarketAreas.Views;
 
 public partial class MainPage : ContentPage
 {
-    private readonly IVoronoiService _voronoiService;
+    //private readonly IVoronoiService _voronoiService;
 
-    public MainPage(MainPageViewModel viewModel, IVoronoiService voronoiService)
+    public MainPage(MainPageViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;
-        _voronoiService = voronoiService;
+        //_voronoiService = voronoiService;
     }
 
-    private void DisplayPointInputPopup(View anchor)
+    // This is clunky (and feels like it's not how MVVM is supposed to work).
+    // TODO: Find a cleaner way (or verify that this is the cleanest).
+    public void OnStartClicked(object sender, EventArgs e)
     {
-        var pointInputPopup = new PointInputPopup(_voronoiService);
-        pointInputPopup.Anchor = anchor;
-        this.ShowPopup(pointInputPopup);
-    }
-
-    private void OnPointsInputClicked(object sender, EventArgs e)
-    {
-        var button = (Button)sender;
-        DisplayPointInputPopup(button);
-    }
-
-    private void OnStartClicked(object sender, EventArgs e)
-    {
-        // Initialize the voronoi centroids.
-        double x, y, width, height;
-        VisualizationView.Bounds.Deconstruct(out x, out y, out width, out height);
-        _voronoiService.InitPoints(x, y, x + width, y + height);
-
-        _voronoiService.PrintPoints();
         VisualizationView.Invalidate();
     }
 }

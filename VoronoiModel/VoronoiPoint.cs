@@ -8,7 +8,7 @@ namespace VoronoiModel
 		/// <summary>
 		/// An optional name of the voronoi point.
 		/// </summary>
-		public string? Name;
+		public string? Name { get; set; }
 
 		/// <summary>
 		/// The x value of the point. This should only be set within the

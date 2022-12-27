@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Maui.Views;
 
 using VoronoiModel;
@@ -9,12 +10,12 @@ namespace MarketAreas.Views.Popups;
 public partial class PointInputPopup : Popup
 {
 
-	private readonly IVoronoiService voronoiService;
+	private readonly Action<VoronoiPoint> addPointAction;
 
-	public PointInputPopup(IVoronoiService voronoiService)
+	public PointInputPopup(Action<VoronoiPoint> addPointAction)
 	{
 		InitializeComponent();
-		this.voronoiService = voronoiService;
+		this.addPointAction = addPointAction;
 	}
 
 	private void ClearEntries()
@@ -38,7 +39,7 @@ public partial class PointInputPopup : Popup
         }
 
         Debug.WriteLine(string.Format("Adding point {0}", point));
-		voronoiService.AddPoint(point);
+		addPointAction(point);
 		ClearEntries();
 		Reset();
 	}

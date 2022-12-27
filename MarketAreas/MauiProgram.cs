@@ -7,6 +7,7 @@ using MarketAreas.Views.Popups;
 using MarketAreas.ViewModels;
 using VoronoiModel;
 using VoronoiModel.Services;
+using MarketAreas.Services;
 
 namespace MarketAreas;
 
@@ -31,7 +32,8 @@ public static class MauiProgram
         // Add windows image loader to the builder.
 //#else
         builder.Services.AddSingleton<IImageLoadingService, PlatformImageLoadingService>();
-//#endif
+        //#endif
+        builder.Services.AddSingleton<IPopupService, PopupService>();
         builder.Services.AddSingleton<IVoronoiService, VoronoiService>();
         builder.Services.AddSingleton<MainPageViewModel>();
         builder.Services.AddSingleton<MainPage>();
