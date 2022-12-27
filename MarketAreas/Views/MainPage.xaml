@@ -2,26 +2,11 @@
 
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:drawables="clr-namespace:MarketAreas.Drawables"
              xmlns:viewmodel="clr-namespace:MarketAreas.ViewModels"
-             xmlns:model="clr-namespace:VoronoiModel;assembly=VoronoiModel"
              x:DataType="viewmodel:MainPageViewModel"
              x:Class="MarketAreas.Views.MainPage">
 
     <ContentPage.Content>
-        <!--<Grid Padding="20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.2*"/>
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-
-            <VerticalStackLayout Grid.Column="0">
-                <Label Text="Testing" FontSize="24"/>
-
-            </VerticalStackLayout>
-            <GraphicsView Grid.Column="1"
-                          Drawable="{StaticResource MapDrawable}"/>
-        </Grid>-->
 
         <!-- Body -->
         <FlexLayout Wrap="Wrap">
@@ -58,7 +43,6 @@
 
                 <Button Text="Start"
                         Command="{Binding StartCommand}"
-                        Clicked="OnStartClicked"
                         Margin="5"/>
 
             </FlexLayout>
@@ -67,7 +51,7 @@
             <GraphicsView FlexLayout.Grow="1"
                           FlexLayout.Basis="400"
                           x:Name="VisualizationView"
-                          Drawable="{Binding MapDrawable}">
+                          Drawable="{Binding VisualizationDrawable}">
             </GraphicsView>
 
         </FlexLayout>

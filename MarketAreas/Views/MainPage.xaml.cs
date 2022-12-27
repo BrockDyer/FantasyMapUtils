@@ -20,13 +20,14 @@ public partial class MainPage : ContentPage
     public MainPage(MainPageViewModel viewModel)
     {
         InitializeComponent();
+        viewModel.InvalidateVisualization = InvalidateVisualizationView;
         BindingContext = viewModel;
         //_voronoiService = voronoiService;
     }
 
-    // This is clunky (and feels like it's not how MVVM is supposed to work).
-    // TODO: Find a cleaner way (or verify that this is the cleanest).
-    public void OnStartClicked(object sender, EventArgs e)
+    // Used to invalidate the graphics view for the visualization.
+    // TODO: Determine if there is a cleaner way to do this (probably yes).
+    private void InvalidateVisualizationView()
     {
         VisualizationView.Invalidate();
     }

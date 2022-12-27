@@ -7,7 +7,7 @@ using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace MarketAreas.Drawables
 {
-	public class MapDrawable : BindableObject, IDrawable
+	public class VisualizationDrawable : BindableObject, IDrawable
 	{
         private readonly IVoronoiService _voronoiService;
 
@@ -16,7 +16,7 @@ namespace MarketAreas.Drawables
         /// <summary>
         /// Construct a MapDrawable.
         /// </summary>
-        public MapDrawable(IVoronoiService voronoiService)
+        public VisualizationDrawable(IVoronoiService voronoiService)
         {
             _voronoiService = voronoiService;
         }

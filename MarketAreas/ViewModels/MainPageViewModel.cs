@@ -28,7 +28,8 @@ namespace MarketAreas.ViewModels
 		public ObservableCollection<VoronoiPoint> VoronoiPoints { get; set; } =
             new ObservableCollection<VoronoiPoint>();
 
-        public Drawables.MapDrawable MapDrawable { get; }
+        public Drawables.VisualizationDrawable VisualizationDrawable { get; }
+        public Action InvalidateVisualization { get; set; }
 
 		public MainPageViewModel(IImageLoadingService imageLoadingService,
 			IVoronoiService voronoiService,
@@ -38,7 +39,7 @@ namespace MarketAreas.ViewModels
 			_voronoiService = voronoiService;
             _popupService = popupService;
 
-            MapDrawable = new Drawables.MapDrawable(_voronoiService);
+            VisualizationDrawable = new Drawables.VisualizationDrawable(_voronoiService);
 		}
 
         /// <summary>
@@ -63,13 +64,14 @@ namespace MarketAreas.ViewModels
         public void Start()
         {
             // Initialize the voronoi centroids.
-            var canvasDims = MapDrawable.GetCanvasSize();
+            var canvasDims = VisualizationDrawable.GetCanvasSize();
             _voronoiService.InitPoints((double)canvasDims.Item1,
                 (double)canvasDims.Item2,
                 (double)(canvasDims.Item3 + canvasDims.Item1),
                 (double)(canvasDims.Item4 + canvasDims.Item2));
 
             _voronoiService.PrintPoints();
+            InvalidateVisualization();
         }
 
         // This feels clunky.
