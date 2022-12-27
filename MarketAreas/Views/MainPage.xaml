@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:MarketAreas.ViewModels"
+             x:DataType="viewmodel:MainPageViewModel"
+             x:Class="MarketAreas.Views.MainPage">
+
+    <ContentPage.Content>
+
+        <!-- Body -->
+        <FlexLayout Wrap="Wrap">
+
+            <!-- Controls -->
+            <FlexLayout FlexLayout.Basis="300"
+                        Direction="Column">
+
+                <Label Text="Controls" FontSize="24"
+                       HorizontalOptions="Center"/>
+
+                <FlexLayout FlexLayout.Basis="60">
+                    <Button Text="Fetch Map"
+                            Margin="5"
+                            FlexLayout.Grow="1"/>
+
+                    <Button Text="Upload Map"
+                            Margin="5"
+                            FlexLayout.Grow="1"/>
+
+                </FlexLayout>
+
+                <Button Text="Points Input"
+                        x:Name="PointsInputButton"
+                        Command="{Binding DisplayPointInputPopupCommand}"
+                        CommandParameter="{Binding Source={RelativeSource Self}}"
+                        Margin="5"/>
+
+                <Button Text="Layers"
+                        Margin="5"/>
+
+                <Button Text="Visualization Options"
+                        Margin="5"/>
+
+                <Button Text="Start"
+                        Command="{Binding StartCommand}"
+                        Margin="5"/>
+
+            </FlexLayout>
+
+            <!-- Visualization view -->
+            <GraphicsView FlexLayout.Grow="1"
+                          FlexLayout.Basis="400"
+                          x:Name="VisualizationView"
+                          Drawable="{Binding VisualizationDrawable}">
+            </GraphicsView>
+
+        </FlexLayout>
+    </ContentPage.Content>
+</ContentPage>
