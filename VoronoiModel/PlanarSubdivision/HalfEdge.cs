@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using VoronoiModel.Geometry;
 
-namespace VoronoiModel.DCEL
+namespace VoronoiModel.PlanarSubdivision
 {
 	/// <summary>
 	/// One half of an edge between two vertices in the DCEL. Separating edges
@@ -17,6 +18,7 @@ namespace VoronoiModel.DCEL
 		/// The actual segment that represents this half edge.
 		/// </summary>
 		public ISegment? Segment { get; internal set; }
+
 		/// <summary>
 		/// The twin of this half edge.
 		/// </summary>
@@ -37,11 +39,6 @@ namespace VoronoiModel.DCEL
         public HalfEdge(Vertex target)
 		{
 			TargetVertex = target;
-			Segment = null;
-			Twin = null;
-			Next = null;
-			Previous = null;
-			IncidentFace = null;
 		}
 
 		/// <summary>
@@ -49,10 +46,30 @@ namespace VoronoiModel.DCEL
 		/// </summary>
 		/// <returns>The source <see cref="Vertex"/>.</returns>
 		/// <exception cref="InvalidOperationException"/>
-		public Vertex GetSource()
+		public virtual Vertex? GetSource()
 		{
-			if (Twin is null) throw new InvalidOperationException("Cannot get source because it is null");
-			return this.Twin.TargetVertex;
+			var edgeWithSourceAsTarget = Twin ?? Previous;
+			return edgeWithSourceAsTarget?.TargetVertex;
+		}
+
+		/// <summary>
+		/// Link this half edge to another.
+		/// </summary>
+		/// <param name="twin">The twin half edge to link to.</param>
+		public virtual void LinkTwin(HalfEdge twin)
+		{
+			Twin = twin;
+			twin.Twin = this;
+		}
+
+		/// <summary>
+		/// Link this half edge to its next edge.
+		/// </summary>
+		/// <param name="next">The next half edge that this edge points to.</param>
+		public virtual void LinkNext(HalfEdge next)
+		{
+			Next = next;
+			next.Previous = this;
 		}
 
         // ============================ Equality ============================ \\
@@ -63,9 +80,9 @@ namespace VoronoiModel.DCEL
         {
 			if (obj is HalfEdge h2)
 			{
-				var sourcesMatch = this.GetSource()?.Equals(h2.GetSource());
+				var sourcesMatch = this.GetSource()?.Equals(h2.GetSource()) ?? false;
 				var targetsMatch = this.TargetVertex.Equals(h2.TargetVertex);
-				return sourcesMatch.GetValueOrDefault(false) && targetsMatch;
+				return sourcesMatch && targetsMatch;
 			}
 
 			return false;
@@ -73,10 +90,18 @@ namespace VoronoiModel.DCEL
 
         public override int GetHashCode()
         {
-			return HashCode.Combine(this.TargetVertex, this.GetSource());
+			var hash = 17;
+			hash = hash * 33 + (GetSource()?.GetHashCode() ?? 17);
+			hash = hash * 33 + TargetVertex.GetHashCode();
+			return hash;
         }
 
         // ================================================================== \\
+
+        public override string ToString()
+        {
+			return string.Format("{0} -> {1}", GetSource(), TargetVertex);
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 using VoronoiModel;
-using VoronoiModel.DCEL;
+using VoronoiModel.PlanarSubdivision;
 
 namespace VoronoiModel.Services
 {
@@ -60,6 +61,12 @@ namespace VoronoiModel.Services
 		/// TODO: Remove.
 		/// </summary>
 		public void PrintPoints();
+
+		/// <summary>
+		/// Visualize the Voronoi Model.
+		/// </summary>
+		/// <param name="canvas">The canvas to draw to.</param>
+		public void Visualize(ICanvas canvas);
 	}
 }
 

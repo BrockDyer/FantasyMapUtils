@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarketAreas", "MarketAreas.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoronoiModel", "..\VoronoiModel\VoronoiModel.csproj", "{FDCED1DB-D548-4E8D-8709-0C487703D47B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoronoiModel.Tests", "..\VoronoiModel.Tests\VoronoiModel.Tests.csproj", "{B2185EEC-3759-482F-9B34-8922EF688E61}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,5 +21,9 @@ Global
 		{FDCED1DB-D548-4E8D-8709-0C487703D47B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDCED1DB-D548-4E8D-8709-0C487703D47B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDCED1DB-D548-4E8D-8709-0C487703D47B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2185EEC-3759-482F-9B34-8922EF688E61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2185EEC-3759-482F-9B34-8922EF688E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2185EEC-3759-482F-9B34-8922EF688E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2185EEC-3759-482F-9B34-8922EF688E61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

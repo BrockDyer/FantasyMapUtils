@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using VoronoiModel.Geometry;
+using Point = VoronoiModel.Geometry.Point;
 
-namespace VoronoiModel.DCEL
+namespace VoronoiModel.PlanarSubdivision
 {
 	/// <summary>
 	/// An exception that is raised when attempting to split a half edge by
@@ -53,8 +55,7 @@ namespace VoronoiModel.DCEL
 			}
 
 			// Construct face
-			var face = new Face();
-			face.Edge = halfEdges[0];
+			var face = new Face(halfEdges[0]);
 
 			// Post-construction initialization of half edges.
 			for (var i = 0; i < 4; i++)
@@ -93,7 +94,7 @@ namespace VoronoiModel.DCEL
 		/// </summary>
 		/// <param name="v1">The vector represnting the upper left point.</param>
 		/// <param name="v2">The vector representing the lower right point.</param>
-		public DCEL(Vector v1, Vector v2) : this(v1.GetX(), v1.GetY(), v2.GetX(), v2.GetZ()) { }
+		public DCEL(Point v1, Point v2) : this(v1.X, v1.Y, v2.X, v2.Y) { }
 
 		/// <summary>
 		/// Add a vertex at point v1 that is connected to the vertex at point v2.
@@ -101,7 +102,7 @@ namespace VoronoiModel.DCEL
 		/// </summary>
 		/// <param name="v1">The new vertex to add as a point vector.</param>
 		/// <param name="v2">The existing vertex to connect v1 to as a point vector.</param>
-		public void AddVertex(Vector v1, Vector v2)
+		public void AddVertex(Point v1, Point v2)
 		{
 			throw new NotImplementedException();
 		}
@@ -111,7 +112,7 @@ namespace VoronoiModel.DCEL
 		/// </summary>
 		/// <param name="v">The vertex to add as a point vector.</param>
 		/// <param name="h">The half edge to split.</param>
-		public void SplitEdge(Vector v, HalfEdge h)
+		public void SplitEdge(Point v, HalfEdge h)
 		{
 			throw new NotImplementedException();
 		}
@@ -124,7 +125,7 @@ namespace VoronoiModel.DCEL
 		/// <param name="u">The second vertex as a point vector.</param>
 		/// <returns>A tuple containing the two newly created faces.</returns>
 		/// <exception cref="NotImplementedException"></exception>
-		public Tuple<Face, Face> SplitFace(Vector v, Vector u)
+		public Tuple<Face, Face> SplitFace(Point v, Point u)
 		{
 			throw new NotImplementedException();
 		}
@@ -148,7 +149,7 @@ namespace VoronoiModel.DCEL
 		/// </summary>
 		/// <param name="v">The vertex to delete as a point vector.</param>
 		/// <exception cref="NotImplementedException"></exception>
-		public void DeleteVertex(Vector v)
+		public void DeleteVertex(Point v)
 		{
 			throw new NotImplementedException();
 		}
@@ -160,7 +161,95 @@ namespace VoronoiModel.DCEL
 		/// <exception cref="NotImplementedException"></exception>
 		public void Visualize(ICanvas canvas)
 		{
-			throw new NotImplementedException();
+			var colors = new string[] {
+				"#cc6666", "#997a00", "#00f261", "#408cff", "#584359", "#d9a3a3", "#bfb68f",
+				"#4d665a", "#1a3866", "#f200c2", "#4c1400", "#f2e63d", "#1d7356", "#bfd9ff",
+				"#ffbff2", "#f26d3d", "#57661a", "#bffff2", "#3939e6", "#ff408c", "#664733",
+				"#bfff40", "#00f2e2", "#1b134d", "#731d3f", "#995200", "#eaffbf", "#2daab3",
+				"#7453a6", "#b20018", "#f29d3d", "#12330d", "#004759", "#bf40ff", "#330007",
+				"#4c3913", "#65b359", "#0077b3"
+			};
+
+			var emptyFaceColor = "#530059";
+
+            var epsilon = 0.01M;
+			Dictionary<Face, int> faceIndexMap = new();
+            Dictionary<Face, Point> faceCentroidMap = new();
+
+			int i = 0;
+			foreach(var face in Faces)
+			{
+				faceIndexMap[face] = i;
+				faceCentroidMap[face] = face.Centroid();
+				i += 1;
+			}
+
+			HashSet<HalfEdge> drawn = new();
+			foreach(var edge in HalfEdges)
+			{
+				// Already drawn
+				if (drawn.Contains(edge)) continue;
+
+				// Draw the edge.
+				var twin = edge.Twin;
+				if (twin is null)
+					throw new InvalidOperationException("Encountered a half edge without a twin in a constructed DCEL");
+
+				var target = edge.TargetVertex.Point;
+				var source = edge.GetSource().Point;
+
+				var face = edge.IncidentFace ?? twin.IncidentFace;
+				if (face is null)
+					throw new InvalidOperationException("Encountered an edge without a face on either side.");
+
+				var centroid = faceCentroidMap[face];
+
+				var faceColor = (edge.IncidentFace is null) ? emptyFaceColor :
+					colors[faceIndexMap[face] % colors.Length];
+				var twinFaceColor = (twin.IncidentFace is null) ? emptyFaceColor:
+					colors[faceIndexMap[face] % colors.Length];
+
+				DrawSegment(source, target, centroid, epsilon, faceColor, canvas);
+				DrawSegment(twin.GetSource().Point, twin.TargetVertex.Point,
+					centroid, -1 * epsilon, twinFaceColor, canvas);
+
+                // Update drawn set.
+                drawn.Add(edge);
+				drawn.Add(twin);
+			}
+
+		}
+
+		private void DrawSegment(Point source, Point target, Point centroid,
+			Decimal epsilon, string color, ICanvas canvas)
+		{
+			canvas.StrokeColor = Color.FromArgb(color);
+			var shiftedSource = ShiftPointTowardPoint(source, centroid, epsilon);
+			var shiftedTarget = ShiftPointTowardPoint(target, centroid, epsilon);
+			var pointFSource = new PointF((float)shiftedSource.X, (float)shiftedSource.Y);
+			var pointFTarget = new PointF((float)shiftedTarget.X, (float)shiftedTarget.Y);
+			canvas.DrawLine(pointFSource, pointFTarget);
+		}
+
+		/// <summary>
+		/// Compute a point that is slightly shifted in a straight line towards
+		/// another point by some factor epsilon.
+		/// </summary>
+		/// <param name="p1">The source point.</param>
+		/// <param name="p2">The destination point.</param>
+		/// <param name="epsilon">The shfit scale.</param>
+		/// <returns>A point along the line p1 -> p2 scaled by epsilon.</returns>
+		private Point ShiftPointTowardPoint(Point p1, Point p2, Decimal epsilon)
+		{
+			var dx = p2.X - p1.X;
+			var dy = p2.Y - p1.Y;
+			if (dx == 0)
+				return new Point(p1.X, p1.Y + (Math.Sign(dy) * epsilon));
+
+			if (dy == 0)
+				return new Point(p1.X + (Math.Sign(dx) * epsilon));
+
+			return new Point(p1.X + (dx * epsilon), p1.Y + (dx * epsilon));
 		}
 	}
 }

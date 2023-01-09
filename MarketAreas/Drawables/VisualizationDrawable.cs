@@ -51,6 +51,7 @@ namespace MarketAreas.Drawables
             DrawPoints(canvas);
 
             // Draw voronoi lines and cells
+            _voronoiService.Visualize(canvas);
 
             // Draw optimal points
         }

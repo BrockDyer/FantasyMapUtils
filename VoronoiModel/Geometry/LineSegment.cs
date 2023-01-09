@@ -8,16 +8,16 @@ namespace VoronoiModel.Geometry
     /// </summary>
 	public class LineSegment : ISegment
 	{
-		readonly Vector start;
-		readonly Vector end;
+		readonly Point start;
+		readonly Point end;
 
         /// <summary>
         /// Construct a new line segment from two
-        /// <see cref="Vector">Point Vectors</see>.
+        /// <see cref="Point">Point Vectors</see>.
         /// </summary>
         /// <param name="start">The starting point vector.</param>
         /// <param name="end">The ending point vector.</param>
-        public LineSegment(Vector start, Vector end)
+        public LineSegment(Point start, Point end)
         {
             this.start = start;
             this.end = end;
@@ -31,7 +31,7 @@ namespace VoronoiModel.Geometry
         /// <param name="x2"></param>
         /// <param name="y2"></param>
         public LineSegment(Decimal x1, Decimal y1, Decimal x2, Decimal y2)
-            : this(new Vector(x1, y1), new Vector(x2, y2)) { }
+            : this(new Point(x1, y1), new Point(x2, y2)) { }
 
         //public void DrawSegment(ICanvas canvas)
         //{
