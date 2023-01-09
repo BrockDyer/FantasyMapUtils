@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using VoronoiModel.PlanarSubdivision;
 using VoronoiModel.Services;
+using VoronoiModel.Geometry;
 
 namespace VoronoiModel
 {
@@ -37,7 +38,7 @@ namespace VoronoiModel
                 point.Y = (decimal)random.NextDouble() * maxY + minY;
             }
 
-            DCEL = new DCEL(minX, minY, maxX, maxY);
+            DCEL = DCEL.Create(new Geometry.Point(minX, minY), new Geometry.Point(maxX, maxY));
         }
 
         public void PrintPoints()

@@ -36,7 +36,7 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		}
 
 		[Test]
-		public void TestGetSource()
+		public void TestSourceVertex()
 		{
 			var currentExpectedSource = source;
 			Vertex? previousExpectedSource = null;
@@ -45,14 +45,14 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 
 			Assert.Multiple(() =>
 			{
-				//Assert.That(he, Is.EqualTo(h.GetSource()));
-				Assert.That(current.GetSource(), Is.EqualTo(currentExpectedSource), "current source is wrong");
-                //Assert.That(pe, Is.EqualTo(p.GetSource()));
-                Assert.That(previous.GetSource(), Is.EqualTo(previousExpectedSource), "previous source is wrong");
-				//Assert.That(ne, Is.EqualTo(n.GetSource()));
-				Assert.That(next.GetSource(), Is.EqualTo(nextExpectedSource), "next source is wrong");
-				//Assert.That(nte, Is.EqualTo(nt.GetSource()));
-				Assert.That(nextTwin.GetSource(), Is.EqualTo(nextTwinExpectedSource), "next twin source is wrong");
+				//Assert.That(he, Is.EqualTo(h.SourceVertex));
+				Assert.That(current.SourceVertex, Is.EqualTo(currentExpectedSource), "current source is wrong");
+                //Assert.That(pe, Is.EqualTo(p.SourceVertex));
+                Assert.That(previous.SourceVertex, Is.EqualTo(previousExpectedSource), "previous source is wrong");
+				//Assert.That(ne, Is.EqualTo(n.SourceVertex));
+				Assert.That(next.SourceVertex, Is.EqualTo(nextExpectedSource), "next source is wrong");
+				//Assert.That(nte, Is.EqualTo(nt.SourceVertex));
+				Assert.That(nextTwin.SourceVertex, Is.EqualTo(nextTwinExpectedSource), "next twin source is wrong");
 			});
 		}
 

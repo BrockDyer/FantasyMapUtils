@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.X509Certificates;
+using System.Xml.Linq;
 using VoronoiModel.Geometry;
 
 namespace VoronoiModel.PlanarSubdivision
@@ -14,6 +17,11 @@ namespace VoronoiModel.PlanarSubdivision
 		/// The vertex that this half edge is pointing to.
 		/// </summary>
         public Vertex TargetVertex { get; internal set; }
+		/// <summary>
+		/// The vertex that this half edge is coming out of.
+		/// </summary>
+		public Vertex? SourceVertex { get; internal set; }
+
 		/// <summary>
 		/// The actual segment that represents this half edge.
 		/// </summary>
@@ -31,6 +39,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// The previous half edge on this incident face.
 		/// </summary>
 		public HalfEdge? Previous { get; internal set; }
+
 		/// <summary>
 		/// The face that is incident with this half edge.
 		/// </summary>
@@ -41,24 +50,16 @@ namespace VoronoiModel.PlanarSubdivision
 			TargetVertex = target;
 		}
 
-		/// <summary>
-		/// Get the source vertex of this half edge.
-		/// </summary>
-		/// <returns>The source <see cref="Vertex"/>.</returns>
-		public virtual Vertex? GetSource()
-		{
-			var edgeWithSourceAsTarget = Twin ?? Previous;
-			return edgeWithSourceAsTarget?.TargetVertex;
-		}
-
-		/// <summary>
-		/// Link this half edge to another.
-		/// </summary>
-		/// <param name="twin">The twin half edge to link to.</param>
-		public virtual void LinkTwin(HalfEdge twin)
+        /// <summary>
+        /// Link this half edge to another.
+        /// </summary>
+        /// <param name="twin">The twin half edge to link to.</param>
+        public virtual void LinkTwin(HalfEdge twin)
 		{
 			Twin = twin;
+			SourceVertex = twin.TargetVertex;
 			twin.Twin = this;
+			twin.SourceVertex = TargetVertex;
 		}
 
 		/// <summary>
@@ -69,6 +70,7 @@ namespace VoronoiModel.PlanarSubdivision
 		{
 			Next = next;
 			next.Previous = this;
+			next.SourceVertex = TargetVertex;
 		}
 
         // ============================ Equality ============================ \\
@@ -79,7 +81,7 @@ namespace VoronoiModel.PlanarSubdivision
         {
 			if (obj is HalfEdge h2)
 			{
-				var sourcesMatch = this.GetSource()?.Equals(h2.GetSource()) ?? false;
+				var sourcesMatch = this.SourceVertex?.Equals(h2.SourceVertex) ?? false;
 				var targetsMatch = this.TargetVertex.Equals(h2.TargetVertex);
 				return sourcesMatch && targetsMatch;
 			}
@@ -90,7 +92,7 @@ namespace VoronoiModel.PlanarSubdivision
         public override int GetHashCode()
         {
 			var hash = 17;
-			hash = hash * 33 + (GetSource()?.GetHashCode() ?? 17);
+			hash = hash * 33 + (SourceVertex?.GetHashCode() ?? 17);
 			hash = hash * 33 + TargetVertex.GetHashCode();
 			return hash;
         }
@@ -99,7 +101,7 @@ namespace VoronoiModel.PlanarSubdivision
 
         public override string ToString()
         {
-			return string.Format("{0} -> {1}", GetSource(), TargetVertex);
+			return string.Format("{0} -> {1}", SourceVertex, TargetVertex);
         }
     }
 }
