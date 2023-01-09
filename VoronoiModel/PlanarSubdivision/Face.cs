@@ -103,8 +103,8 @@ namespace VoronoiModel.PlanarSubdivision
 				CySum += (vi.Y + vn.Y) * ((vi.X * vn.Y) - (vn.X * vi.Y));
 			}
 
-			var Cx = (1M / 6M * A) * CxSum;
-			var Cy = (1M / 6M * A) * CySum;
+			var Cx = (1M / (6M * A)) * CxSum;
+			var Cy = (1M / (6M * A)) * CySum;
 
 			return new Point(Math.Round(Cx, 3), Math.Round(Cy, 3));
 		}

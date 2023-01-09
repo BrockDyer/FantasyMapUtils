@@ -173,7 +173,7 @@ namespace VoronoiModel.PlanarSubdivision
 			var emptyFaceColor = "#530059";
 
             var epsilon = 0.01M;
-			Dictionary<Face, int> faceIndexMap = new();
+            Dictionary<Face, int> faceIndexMap = new();
             Dictionary<Face, Point> faceCentroidMap = new();
 
 			int i = 0;
@@ -193,14 +193,34 @@ namespace VoronoiModel.PlanarSubdivision
 				// Draw the edge.
 				var twin = edge.Twin;
 				if (twin is null)
-					throw new InvalidOperationException("Encountered a half edge without a twin in a constructed DCEL");
+				{
+					Debug.WriteLine("Encountered a half edge without a twin in a constructed DCEL", "Error");
+					continue;
+				}
 
-				var target = edge.TargetVertex.Point;
-				var source = edge.GetSource().Point;
+                var target = edge.TargetVertex.Point;
+				var source = edge.GetSource()?.Point;
 
-				var face = edge.IncidentFace ?? twin.IncidentFace;
-				if (face is null)
-					throw new InvalidOperationException("Encountered an edge without a face on either side.");
+				if (source is null)
+				{
+					Debug.WriteLine("Edge {0}, has no source!", "Error", edge);
+					continue;
+				}
+
+				Face? face = null;
+				int direction = 1;
+				if (edge.IncidentFace is not null)
+				{
+					face = edge.IncidentFace;
+				} else if (twin.IncidentFace is not null)
+				{
+					face = twin.IncidentFace;
+					direction *= -1;
+				} else
+				{
+					Debug.WriteLine("Encountered edge that has no face on either side.", "Error");
+					continue;
+				}
 
 				var centroid = faceCentroidMap[face];
 
@@ -209,15 +229,14 @@ namespace VoronoiModel.PlanarSubdivision
 				var twinFaceColor = (twin.IncidentFace is null) ? emptyFaceColor:
 					colors[faceIndexMap[face] % colors.Length];
 
-				DrawSegment(source, target, centroid, epsilon, faceColor, canvas);
-				DrawSegment(twin.GetSource().Point, twin.TargetVertex.Point,
-					centroid, -1 * epsilon, twinFaceColor, canvas);
+				DrawSegment(source, target, centroid, direction * epsilon, faceColor, canvas);
+				DrawSegment(twin.GetSource()?.Point ?? new Point(0, 0), twin.TargetVertex.Point,
+					centroid, -1 * direction * epsilon, twinFaceColor, canvas);
 
                 // Update drawn set.
                 drawn.Add(edge);
 				drawn.Add(twin);
 			}
-
 		}
 
 		private void DrawSegment(Point source, Point target, Point centroid,
@@ -249,7 +268,7 @@ namespace VoronoiModel.PlanarSubdivision
 			if (dy == 0)
 				return new Point(p1.X + (Math.Sign(dx) * epsilon));
 
-			return new Point(p1.X + (dx * epsilon), p1.Y + (dx * epsilon));
+			return new Point(p1.X + (dx * epsilon), p1.Y + (dy * epsilon));
 		}
 	}
 }

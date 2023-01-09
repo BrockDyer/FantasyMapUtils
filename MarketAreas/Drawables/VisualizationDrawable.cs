@@ -26,7 +26,7 @@ namespace MarketAreas.Drawables
             dirtyRect.Deconstruct(out x, out y, out width, out height);
             canvas.StrokeColor = Colors.Purple;
             canvas.StrokeSize = 4;
-            canvas.DrawRectangle(dirtyRect.Left, dirtyRect.Top, width, height);
+            //canvas.DrawRectangle(dirtyRect.Left, dirtyRect.Top, width, height);
 
             // Draw the image.
             //if (MapImage != null)

@@ -45,7 +45,6 @@ namespace VoronoiModel.PlanarSubdivision
 		/// Get the source vertex of this half edge.
 		/// </summary>
 		/// <returns>The source <see cref="Vertex"/>.</returns>
-		/// <exception cref="InvalidOperationException"/>
 		public virtual Vertex? GetSource()
 		{
 			var edgeWithSourceAsTarget = Twin ?? Previous;
