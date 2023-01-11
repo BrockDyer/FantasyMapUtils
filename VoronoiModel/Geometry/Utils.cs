@@ -1,12 +1,12 @@
 ﻿using System;
 namespace VoronoiModel.Geometry
 {
-	public class Utils
+	public static class Utils
 	{
 		/// <summary>
 		/// The tolerance for rounding errors when checking equality.
 		/// </summary>
-		public static readonly double EPSILON = 0.000000001;
+		public const double Epsilon = 0.000000001;
 
 		/// <summary>
 		/// A primitive, but potentially useful equality check for arithmetic
@@ -17,7 +17,7 @@ namespace VoronoiModel.Geometry
 		/// <returns></returns>
 		public static bool AreClose(double a, double b)
 		{
-			return Math.Abs(a - b) < EPSILON;
+			return Math.Abs(a - b) < Epsilon;
 		}
 	}
 }

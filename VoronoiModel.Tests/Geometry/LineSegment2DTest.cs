@@ -67,7 +67,6 @@ namespace VoronoiModel.Tests.Geometry
 				Assert.That(segment2.IntersectsWith(segment1), Is.True, "Segment 2 should intersect with 2");
 				Assert.That(segment1.IntersectsWith(segment3), Is.False, "Segment 1 should not intersect with 3");
 				Assert.That(segment2.IntersectsWith(segment3), Is.False, "Segment 2 should not intersect with 3");
-				Assert.That(segment1.IntersectsWith(segment1), Is.False, "Overlapping segments are not considered as intersecting.");
 
 				// Test horizontal line version
 				Assert.That(segment1.IntersectsWith(0.7), Is.True, "Segment 1 should intersect with horizontal line at 0.7");
@@ -75,7 +74,39 @@ namespace VoronoiModel.Tests.Geometry
 				Assert.That(segment3.IntersectsWith(0.7), Is.False, "Segment 3 should not intersect with horizontal line at 0.7");
 			});
 
+			// Edge Cases
+			Assert.Multiple(() =>
+			{
+				// Overlapping line
+				Assert.That(segment1.IntersectsWith(segment1), Is.False, "Overlapping segments are not considered as intersecting.");
+
+				// Common endpoint
+				var overlappingEndpoint = new LineSegment2D(new Point2D(0, 0), new Point2D(-1, -1));
+				Assert.That(segment1.IntersectsWith(overlappingEndpoint), Is.True, "Should be an intersection at (0, 0).");
+
+				// Point on line
+				var pointOnLine = new LineSegment2D(new Point2D(0, 1), new Point2D(0.5, 0.5));
+				Assert.That(segment1.IntersectsWith(pointOnLine), Is.True, "Should intersect at (0.5, 0.5).");
+			});
         }
+
+		[Test]
+		public void TestIntersectsWithLeftRayFrom()
+		{
+			var testPointTrue = new Point2D(1, 0.7);
+			var testPointFalse = new Point2D(0, 0.7);
+			var testPointOn = new Point2D(0.7, 0.7);
+
+			Assert.Multiple(() =>
+			{
+				Assert.That(segment1.IntersectsWithLeftRayFrom(testPointTrue), Is.True,
+					"Segment 1 did not intersect with left ray from {0}.", testPointTrue);
+				Assert.That(segment1.IntersectsWithLeftRayFrom(testPointFalse), Is.False,
+					"Segment 1 intersected with left ray from {0}", testPointFalse);
+				Assert.That(segment1.IntersectsWithLeftRayFrom(testPointOn), Is.True,
+					"Segment 1 did not intersect with left ray from {0}", testPointOn);
+			});
+		}
 	}
 }
 

@@ -1,5 +1,4 @@
-﻿using System;
-namespace VoronoiModel.Geometry
+﻿namespace VoronoiModel.Geometry
 {
 	public class Point2D
 	{
@@ -15,8 +14,8 @@ namespace VoronoiModel.Geometry
         public override bool Equals(object? obj)
         {
             return obj is Point2D d &&
-                   X == d.X &&
-                   Y == d.Y;
+                   Utils.AreClose(X, d.X) &&
+                   Utils.AreClose(Y, d.Y);
         }
 
         public override int GetHashCode()
@@ -26,7 +25,7 @@ namespace VoronoiModel.Geometry
 
         public override string ToString()
         {
-            return string.Format("({0}, {1})", X, Y);
+            return $"({X}, {Y})";
         }
     }
 }

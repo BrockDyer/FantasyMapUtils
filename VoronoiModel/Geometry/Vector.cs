@@ -1,17 +1,16 @@
-﻿using System;
-namespace VoronoiModel.Geometry
+﻿namespace VoronoiModel.Geometry
 {
 	public class Vector
 	{
-		private readonly List<double> elements;
+		private readonly List<double> _elements;
 
-		public int Size { get; }
+		private int Size { get; }
 
 		public Vector(params double[] elements) : this(elements.ToList()) { }
 
-		public Vector(List<double> elements)
+		private Vector(List<double> elements)
 		{
-			this.elements = elements;
+			this._elements = elements;
 			Size = elements.Count;
 		}
 
@@ -24,7 +23,7 @@ namespace VoronoiModel.Geometry
 		/// <returns>The element at the index.</returns>
 		public double Get(int i)
 		{
-			return elements[i];
+			return _elements[i];
 		}
 
 		public double Dot(Vector other)
@@ -33,7 +32,7 @@ namespace VoronoiModel.Geometry
 			var sum = 0d;
 			for (int i = 0; i < Size; i++)
 			{
-				sum += (elements[i] * other.elements[i]);
+				sum += (_elements[i] * other._elements[i]);
 			}
 			return sum;
 		}
@@ -41,16 +40,16 @@ namespace VoronoiModel.Geometry
 		public Vector Cross2D(Vector other)
 		{
 			if (Size != 2)
-				throw new InvalidOperationException(string.Format("{0} is only supported for 2D vectors.", nameof(Cross2D)));
+				throw new InvalidOperationException($"{nameof(Cross2D)} is only supported for 2D vectors.");
 			EnforceSameSize(other);
 
-			var x1 = elements[0];
-			var y1 = elements[1];
-			var z1 = 0d;
+			var x1 = _elements[0];
+			var y1 = _elements[1];
+			const double z1 = 0d;
 
-			var x2 = other.elements[0];
-			var y2 = other.elements[1];
-			var z2 = 0d;
+			var x2 = other._elements[0];
+			var y2 = other._elements[1];
+			const double z2 = 0d;
 
 			var rx = (y1 * z2) - (z1 * y2);
 			var ry = (z1 * x2) - (x1 * z2);
@@ -63,9 +62,9 @@ namespace VoronoiModel.Geometry
 		{
 			EnforceSameSize(other);
 			var result = new List<double>();
-			for (int i = 0; i < Size; i++)
+			for (var i = 0; i < Size; i++)
 			{
-				result.Add(elements[i] + other.elements[i]);
+				result.Add(_elements[i] + other._elements[i]);
 			}
 			return new Vector(result);
 		}
@@ -74,31 +73,23 @@ namespace VoronoiModel.Geometry
 		{
             EnforceSameSize(other);
             var result = new List<double>();
-            for (int i = 0; i < Size; i++)
+            for (var i = 0; i < Size; i++)
             {
-                result.Add(elements[i] - other.elements[i]);
+                result.Add(_elements[i] - other._elements[i]);
             }
             return new Vector(result);
         }
 
 		public double Magnitude()
 		{
-			var squaredSum = 0d;
-			foreach(var elem in elements)
-			{
-				squaredSum += elem * elem;
-			}
-			return (double)(Math.Sqrt((double)squaredSum));
+			var squaredSum = _elements.Sum(elem => elem * elem);
+			return Math.Sqrt(squaredSum);
 		}
 
 		public Vector Normalize()
 		{
-			var result = new List<double>();
 			var magnitude = Magnitude();
-			foreach(var elem in elements)
-			{
-				result.Add(elem / magnitude);
-			}
+			var result = _elements.Select(elem => elem / magnitude).ToList();
 			return new Vector(result);
 		}
 
@@ -110,15 +101,7 @@ namespace VoronoiModel.Geometry
 
 		public bool IsZero()
 		{
-			foreach(var elem in elements)
-			{
-				if(!Utils.AreClose(elem, 0))
-				{
-					return false;
-				}
-			}
-
-			return true;
+			return _elements.All(elem => Utils.AreClose(elem, 0));
 		}
 	}
 }

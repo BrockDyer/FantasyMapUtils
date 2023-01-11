@@ -95,7 +95,21 @@ namespace VoronoiModel.Tests.PlanarSubdivision
         [Test]
         public void TestContainsPoint2D()
         {
-            Assert.Fail();
+            var pointWithin1 = new Point2D(0.5, 0.5);
+            var pointWithin2 = new Point2D(0.1, 0.1);
+            var pointOn = new Point2D(vur.X / 2, vur.Y);
+            var pointOutside = new Point2D(-1, -1);
+            
+            Assert.Multiple(() =>
+            {
+                Assert.That(f1.ContainsPoint(pointWithin1), Is.True, "Face 1 does not contain {0}", pointWithin1);
+                Assert.That(f1.ContainsPoint(pointWithin2), Is.True, "Face 1 does not contain {0}", pointWithin2);
+                Assert.That(f1.ContainsPoint(pointOn), Is.True, "Point {0} on face 1 not recognized as inside face.", pointOn);
+                Assert.That(f1.ContainsPoint(pointOutside), Is.False, "Point {0} was inside face 1.", pointOutside);
+                
+                // Sanity check
+                Assert.That(f2.ContainsPoint(pointWithin1), Is.True, "Face 2 did not contain {0}", pointWithin1);
+            });
         }
 
         [Test]

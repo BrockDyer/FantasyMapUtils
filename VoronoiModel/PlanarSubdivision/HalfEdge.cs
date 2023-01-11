@@ -17,7 +17,31 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <summary>
 		/// The vertex that this half edge is coming out of.
 		/// </summary>
-		public Vertex? SourceVertex { get; internal set; }
+
+		// The backing field for SourceVertex property.
+		private Vertex? _sourceVertex;
+
+		/// <summary>
+		/// The vertex that this half edge is coming from. When this is set, it
+		/// will automatically update the Segment property.
+		/// </summary>
+		public Vertex? SourceVertex {
+			get
+			{
+				return _sourceVertex;
+			}
+			internal set
+			{
+				if (value is null)
+				{
+					Segment = null;
+					return;
+				};
+
+				_sourceVertex = value;
+				Segment = new LineSegment2D(_sourceVertex.Point, TargetVertex.Point);
+			}
+		}
 
 		/// <summary>
 		/// The actual segment that represents this half edge.
