@@ -38,7 +38,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="point">The point vector to check.</param>
 		/// <returns>True if the point vector is contained within the face.
 		/// False otherwise.</returns>
-		public bool ContainsPoint(Point point)
+		public bool ContainsPoint(Point2D point)
 		{
 			throw new NotImplementedException();
 		}
@@ -68,9 +68,9 @@ namespace VoronoiModel.PlanarSubdivision
         /// </summary>
         /// <returns>The point vector of the centroid.</returns>
 		/// <exception cref="InvalidOperationException"/>
-        public Point Centroid()
+        public Point2D Centroid()
 		{
-			var vertices = new List<Point>();
+			var vertices = new List<Point2D>();
 			var start = Edge;
 			var current = Edge;
 			while (true)
@@ -93,8 +93,8 @@ namespace VoronoiModel.PlanarSubdivision
 			}
 
 			var A = SignedArea(vertices);
-			var CxSum = 0M;
-			var CySum = 0M;
+			var CxSum = 0d;
+			var CySum = 0d;
 			for (var i = 0; i < vertices.Count - 1; i++)
 			{
 				var vi = vertices[i];
@@ -103,10 +103,10 @@ namespace VoronoiModel.PlanarSubdivision
 				CySum += (vi.Y + vn.Y) * ((vi.X * vn.Y) - (vn.X * vi.Y));
 			}
 
-			var Cx = (1M / (6M * A)) * CxSum;
-			var Cy = (1M / (6M * A)) * CySum;
+			var Cx = (1d / (6d * A)) * CxSum;
+			var Cy = (1d / (6d * A)) * CySum;
 
-			return new Point(Math.Round(Cx, 3), Math.Round(Cy, 3));
+			return new Point2D(Math.Round(Cx, 3), Math.Round(Cy, 3));
 		}
 
 		/// <summary>
@@ -116,9 +116,9 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="vertices">A list of the point vector vertices. Must
 		/// have the start point duplicated at the end.</param>
 		/// <returns>The signed area.</returns>
-		private Decimal SignedArea(List<Point> vertices)
+		private double SignedArea(List<Point2D> vertices)
 		{
-			var sum = 0M;
+			var sum = 0d;
 			for (var i = 0; i < vertices.Count - 1; i++)
 			{
 				var vi = vertices[i];
@@ -126,7 +126,7 @@ namespace VoronoiModel.PlanarSubdivision
 
 				sum += (vi.X * vn.Y) - (vn.X * vi.Y);
 			}
-			return 0.5M * sum;
+			return 0.5d * sum;
 		}
 
         // =========================== Equality ============================= \\

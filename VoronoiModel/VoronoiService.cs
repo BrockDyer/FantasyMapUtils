@@ -30,15 +30,15 @@ namespace VoronoiModel
             return points;
         }
 
-        public void InitPoints(decimal minX, decimal minY, decimal maxX, decimal maxY)
+        public void InitPoints(double minX, double minY, double maxX, double maxY)
         {
             foreach (var point in points)
             {
-                point.X = (decimal)random.NextDouble() * maxX + minX;
-                point.Y = (decimal)random.NextDouble() * maxY + minY;
+                point.X = random.NextDouble() * maxX + minX;
+                point.Y = random.NextDouble() * maxY + minY;
             }
 
-            DCEL = DCEL.Create(new Geometry.Point(minX, minY), new Geometry.Point(maxX, maxY));
+            DCEL = DCEL.Create(new Geometry.Point2D(minX, minY), new Geometry.Point2D(maxX, maxY));
         }
 
         public void PrintPoints()
@@ -49,7 +49,7 @@ namespace VoronoiModel
             }
         }
 
-        public List<Tuple<decimal, decimal>> SamplePointsWithinCell(VoronoiPoint point, int sampleSize)
+        public List<Tuple<double, double>> SamplePointsWithinCell(VoronoiPoint point, int sampleSize)
         {
             throw new NotImplementedException();
         }

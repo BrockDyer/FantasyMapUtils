@@ -25,20 +25,8 @@ namespace VoronoiModel.Services
 		/// <param name="minY">The minimum y value of the search space.</param>
 		/// <param name="maxX">The maximum x value of the search space.</param>
 		/// <param name="maxY">The maximum y value of the search space.</param>
-        public void InitPoints(Decimal minX, Decimal minY, Decimal maxX,
-			Decimal maxY);
-
-        /// <summary>
-        /// Initialize the points using a uniformly random distribution.
-        /// </summary>
-        /// <param name="minX">The minimum x value of the search space.</param>
-        /// <param name="minY">The minimum y value of the search space.</param>
-        /// <param name="maxX">The maximum x value of the search space.</param>
-        /// <param name="maxY">The maximum y value of the search space.</param>
-        public void InitPoints(double minX, double minY, double maxX, double maxY)
-        {
-            InitPoints((decimal)minX, (decimal)minY, (decimal)maxX, (decimal)maxY);
-        }
+        public void InitPoints(double minX, double minY, double maxX,
+			double maxY);
 
         /// <summary>
         /// Compute the voronoi cells for each point.
@@ -52,7 +40,7 @@ namespace VoronoiModel.Services
 		/// <param name="point">A centroid in the voronoi model.</param>
 		/// <param name="sampleSize">The number of points to sample.</param>
 		/// <returns></returns>
-		public List<Tuple<Decimal, Decimal>> SamplePointsWithinCell(
+		public List<Tuple<double, double>> SamplePointsWithinCell(
 			VoronoiPoint point, int sampleSize);
 
 		/// <summary>

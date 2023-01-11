@@ -32,8 +32,8 @@ public partial class PointInputPopup : Popup
 			Name = name
 		};
 
-        Decimal weight;
-        if (Decimal.TryParse(PointWeightEntry.Text, out weight))
+        double weight;
+        if (Double.TryParse(PointWeightEntry.Text, out weight))
         {
 			point.Weight = weight;
         }

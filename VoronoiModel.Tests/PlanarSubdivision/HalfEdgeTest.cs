@@ -1,5 +1,6 @@
 ﻿using System;
 using VoronoiModel.PlanarSubdivision;
+using VoronoiModel.Geometry;
 
 namespace VoronoiModel.Tests.PlanarSubdivision
 {
@@ -11,16 +12,16 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		HalfEdge next;
 		HalfEdge nextTwin;
 
-		Vertex target;
-		Vertex source;
-		Vertex nextTarget;
+		Point2D target;
+		Point2D source;
+		Point2D nextTarget;
 
 		[OneTimeSetUp]
 		public void Setup()
 		{
-			target = new Vertex(1, 0);
-			source = new Vertex(0, 0);
-			nextTarget = new Vertex(2, 0);
+			target = new Point2D(1, 0);
+			source = new Point2D(0, 0);
+			nextTarget = new Point2D(2, 0);
 
 			current = new HalfEdge(target);
 			previous = new HalfEdge(source);
@@ -39,20 +40,20 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		public void TestSourceVertex()
 		{
 			var currentExpectedSource = source;
-			Vertex? previousExpectedSource = null;
+			Point2D? previousExpectedSource = null;
 			var nextExpectedSource = target;
-			Vertex? nextTwinExpectedSource = nextTarget;
+			Point2D? nextTwinExpectedSource = nextTarget;
 
 			Assert.Multiple(() =>
 			{
 				//Assert.That(he, Is.EqualTo(h.SourceVertex));
-				Assert.That(current.SourceVertex, Is.EqualTo(currentExpectedSource), "current source is wrong");
+				Assert.That(current.SourceVertex?.Point, Is.EqualTo(currentExpectedSource), "current source is wrong");
                 //Assert.That(pe, Is.EqualTo(p.SourceVertex));
-                Assert.That(previous.SourceVertex, Is.EqualTo(previousExpectedSource), "previous source is wrong");
+                Assert.That(previous.SourceVertex?.Point, Is.EqualTo(previousExpectedSource), "previous source is wrong");
 				//Assert.That(ne, Is.EqualTo(n.SourceVertex));
-				Assert.That(next.SourceVertex, Is.EqualTo(nextExpectedSource), "next source is wrong");
+				Assert.That(next.SourceVertex?.Point, Is.EqualTo(nextExpectedSource), "next source is wrong");
 				//Assert.That(nte, Is.EqualTo(nt.SourceVertex));
-				Assert.That(nextTwin.SourceVertex, Is.EqualTo(nextTwinExpectedSource), "next twin source is wrong");
+				Assert.That(nextTwin.SourceVertex?.Point, Is.EqualTo(nextTwinExpectedSource), "next twin source is wrong");
 			});
 		}
 
@@ -60,7 +61,7 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		public void TestLinkTwin()
 		{
 			// Setup
-			var nextNextTarget = new Vertex(3, 0);
+			var nextNextTarget = new Point2D(3, 0);
 			var nextNext = new HalfEdge(nextNextTarget);
 			var nextNextTwin = new HalfEdge(nextTarget);
 
@@ -92,8 +93,8 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		[Test]
 		public void TestEquals()
 		{
-			var source = new Vertex(0, 0);
-			var target = new Vertex(1, 1);
+			var source = new Point2D(0, 0);
+			var target = new Point2D(1, 1);
 
 			var h1 = new HalfEdge(target);
 			var h1twin = new HalfEdge(source);
@@ -118,8 +119,8 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		[Test]
 		public void TestHashCode()
 		{
-            var source = new Vertex(0, 0);
-            var target = new Vertex(1, 1);
+            var source = new Point2D(0, 0);
+            var target = new Point2D(1, 1);
 
             var h1 = new HalfEdge(target);
             var h1twin = new HalfEdge(source);

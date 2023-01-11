@@ -18,9 +18,11 @@
 
   <ItemGroup>
     <None Remove="PlanarSubdivision\" />
+    <None Remove="Geometry\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="PlanarSubdivision\" />
+    <Folder Include="Geometry\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\VoronoiModel\VoronoiModel.csproj" />

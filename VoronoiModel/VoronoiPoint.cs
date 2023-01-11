@@ -14,13 +14,13 @@ namespace VoronoiModel
 		/// The x value of the point. This should only be set within the
 		/// algorithm.
 		/// </summary>
-		internal Decimal? X;
+		internal double? X;
 
 		/// <summary>
 		/// Get this point's x value.
 		/// </summary>
-		/// <returns>A decimal representing the x-coord of the point.</returns>
-        public Decimal? GetX()
+		/// <returns>A double representing the x-coord of the point.</returns>
+        public double? GetX()
         {
             return X;
         }
@@ -29,24 +29,24 @@ namespace VoronoiModel
         /// The y value of the point. This should only be set within the
         /// algorithm.
         /// </summary>
-        internal Decimal? Y;
+        internal double? Y;
 
 		/// <summary>
 		/// Get this point's y value.
 		/// </summary>
-		/// <returns>A decimal representing the y-coord of the point.</returns>
-		public Decimal? GetY()
+		/// <returns>A double representing the y-coord of the point.</returns>
+		public double? GetY()
 		{
 			return Y;
 		}
 
-		public static readonly Decimal DEFAULT_WEIGHT = 0;
-		private Decimal weight = DEFAULT_WEIGHT;
+		public static readonly double DEFAULT_WEIGHT = 0;
+		private double weight = DEFAULT_WEIGHT;
 
 		/// <summary>
 		/// The optional weight of the voronoi point.
 		/// </summary>
-		public Decimal? Weight
+		public double? Weight
         {
             get
             {

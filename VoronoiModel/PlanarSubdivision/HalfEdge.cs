@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography.X509Certificates;
-using System.Xml.Linq;
 using VoronoiModel.Geometry;
 
 namespace VoronoiModel.PlanarSubdivision
@@ -25,7 +22,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <summary>
 		/// The actual segment that represents this half edge.
 		/// </summary>
-		public ISegment? Segment { get; internal set; }
+		public LineSegment2D? Segment { get; internal set; }
 
 		/// <summary>
 		/// The twin of this half edge.
@@ -45,7 +42,23 @@ namespace VoronoiModel.PlanarSubdivision
 		/// </summary>
 		public Face? IncidentFace { get; internal set; }
 
-        public HalfEdge(Vertex target)
+		/// <summary>
+		/// Construct a half edge from the target point.
+		/// </summary>
+		/// <param name="target">The target point.</param>
+		public HalfEdge(Point2D target)
+		{
+			var v = new Vertex(target, this);
+			TargetVertex = v;
+		}
+
+		/// <summary>
+		/// Construct a half edge from the target vertex. For internal use only.
+		/// Target should be an existing vertex in the DCEL and not a newly
+		/// constructed one.
+		/// </summary>
+		/// <param name="target">The target vertex.</param>
+		internal HalfEdge(Vertex target)
 		{
 			TargetVertex = target;
 		}

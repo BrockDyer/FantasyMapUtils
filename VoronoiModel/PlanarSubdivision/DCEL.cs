@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using VoronoiModel.Geometry;
-using Point = VoronoiModel.Geometry.Point;
 
 namespace VoronoiModel.PlanarSubdivision
 {
@@ -10,13 +9,28 @@ namespace VoronoiModel.PlanarSubdivision
 	/// An exception that is raised when attempting to split a half edge by
 	/// a new vertex and the vertex does not fall on that half edge.
 	/// </summary>
-	public class PointNotOnHalfEdgeException : Exception { }
+	public class PointNotOnHalfEdgeException : Exception
+	{
+		public PointNotOnHalfEdgeException(string msg) : base(msg) { }
+	}
 
 	/// <summary>
 	/// An exception that is raised when attempting to perform an operation with
 	/// an existing vertex u, but u does not exist.
 	/// </summary>
-	public class VertexNotFoundException : Exception { }
+	public class VertexNotFoundException : Exception
+	{
+		public VertexNotFoundException(string msg) : base(msg) { }
+	}
+
+	/// <summary>
+	/// An exception that should be raised when the DCEL is detected to be in a
+	/// corrupted state.
+	/// </summary>
+	public class CorruptedDCELException : Exception
+	{
+		public CorruptedDCELException(string msg) : base(msg) { }
+	}
 
 	/// <summary>
 	/// A subdivision of a planar space into faces. Faces may be traversed by
@@ -32,21 +46,81 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <summary>
 		/// Efficiently store half edges as Source -> Target -> HalfEdge
 		/// </summary>
-		Dictionary<Point, Dictionary<Point, HalfEdge>> HalfEdges { get; } = new();
-		Dictionary<Point, Vertex> Vertices { get; } = new();
+		Dictionary<Point2D, Dictionary<Point2D, HalfEdge>> HalfEdges { get; } = new();
+		Dictionary<Point2D, Vertex> Vertices { get; } = new();
         HashSet<Face> Faces { get; } = new();
+
+		/// <summary>
+		/// Get a list of the faces in this DCEL.
+		/// </summary>
+		/// <returns>A list of faces.</returns>
+		public List<Face> GetFaces()
+		{
+			return Faces.ToList();
+		}
+
+		/// <summary>
+		/// Get the face that is incident to a given half edge.
+		/// </summary>
+		/// <param name="source">The source of the half edge.</param>
+		/// <param name="target">The target of the half edge.</param>
+		/// <returns></returns>
+		public Face? GetFaceWithEdge(Point2D source, Point2D target)
+		{
+			return GetEdge(source, target)?.IncidentFace;
+		}
 
 		/// <summary>
 		/// Create a new instance of the DCEL object.
 		/// </summary>
 		private DCEL() {}
 
-		private HalfEdge GetEdge(Point source, Point target)
+		/// <summary>
+		/// Get a half edge by its source and target vertex.
+		/// </summary>
+		/// <param name="source">The source point.</param>
+		/// <param name="target">The target point.</param>
+		/// <returns>The half edge, if it exists.</returns>
+		private HalfEdge? GetEdge(Point2D source, Point2D target)
 		{
-			return HalfEdges[source][target];
+			HalfEdge? edge = null;
+			HalfEdges.TryGetValue(source, out var map);
+			map?.TryGetValue(target, out edge);
+			return edge;
 		}
 
-		private Vertex GetVertex(Point p)
+		/// <summary>
+		/// Helper method to add a complete half edge to the map. It must have
+		/// both its target and source set.
+		/// </summary>
+		/// <param name="edge">The half edge to add.</param>
+		/// <exception cref="CorruptedDCELException">If the half edge is not complete.</exception>
+		private void AddEdgeToMap(HalfEdge edge)
+		{
+			var source = edge.SourceVertex?.Point;
+			var target = edge.TargetVertex.Point;
+
+			if (source is null)
+			{
+				var msg = string.Format("Attempted to add an incomplete half edge {0} to the DCEL.", edge);
+				Debug.WriteLine(msg, "Error");
+				throw new CorruptedDCELException(msg);
+			}
+
+			if (!HalfEdges.ContainsKey(source))
+			{
+				HalfEdges.Add(source, new());
+			}
+
+			HalfEdges[source].Add(target, edge);
+		}
+
+		/// <summary>
+		/// Get a vertex from the map if it exists.
+		/// </summary>
+		/// <param name="p">The point location of the vertex.</param>
+		/// <returns>The vertex at the given point.</returns>
+		private Vertex? GetVertex(Point2D p)
 		{
 			return Vertices[p];
 		}
@@ -58,23 +132,22 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="upperLeft">The upper left point of the plane.</param>
 		/// <param name="lowerRight">The lower right point of the plane.</param>
 		/// <returns>A DCEL initialized such that the only face is the plane.</returns>
-		public static DCEL Create(Point upperLeft, Point lowerRight)
+		public static DCEL Create(Point2D upperLeft, Point2D lowerRight)
 		{
 			var dcel = new DCEL();
 
             // Construct vertices.
-            var vul = new Vertex(upperLeft.X, upperLeft.Y);
-            var vur = new Vertex(lowerRight.X, upperLeft.Y);
-            var vlr = new Vertex(lowerRight.X, lowerRight.Y);
-            var vll = new Vertex(upperLeft.X, lowerRight.Y);
+            var vul = new Point2D(upperLeft.X, upperLeft.Y);
+            var vur = new Point2D(lowerRight.X, upperLeft.Y);
+            var vlr = new Point2D(lowerRight.X, lowerRight.Y);
+            var vll = new Point2D(upperLeft.X, lowerRight.Y);
 
             // Construct half edges
             var halfEdges = new List<HalfEdge>();
-            foreach (var vertex in new Vertex[] { vul, vur, vlr, vll, vll, vul, vur, vlr })
+            foreach (var vertexPoint in new Point2D[] { vul, vur, vlr, vll, vll, vul, vur, vlr })
             {
-                var edge = new HalfEdge(vertex);
+                var edge = new HalfEdge(vertexPoint);
                 halfEdges.Add(edge);
-                vertex.Edge = edge;
             }
 
             // Construct face
@@ -86,14 +159,19 @@ namespace VoronoiModel.PlanarSubdivision
                 var h1 = halfEdges[i];
                 var h2 = halfEdges[i + 4];
 
-                // Set twins
-                //h1.Twin = h2;
-                //h2.Twin = h1;
-				h1.LinkTwin(h2);
+				// Set twins
+				//h1.LinkTwin(h2)
+
+				// Manually initializing so that Intellisense and Compiler
+				// recognize that source vertices are not null.
+				h1.Twin = h2;
+				h2.Twin = h1;
+				h1.SourceVertex = h2.TargetVertex;
+				h2.SourceVertex = h1.TargetVertex;
 
                 // Set line segments
-                h1.Segment = new LineSegment(h1.SourceVertex.Point, h1.TargetVertex.Point);
-                h2.Segment = new LineSegment(h2.SourceVertex.Point, h2.TargetVertex.Point);
+                h1.Segment = new LineSegment2D(h1.SourceVertex.Point, h1.TargetVertex.Point);
+                h2.Segment = new LineSegment2D(h2.SourceVertex.Point, h2.TargetVertex.Point);
 
                 // Set previous and next
                 var prevIndex = (i + 4) % 4;
@@ -125,9 +203,16 @@ namespace VoronoiModel.PlanarSubdivision
 				dcel.HalfEdges[source].Add(target, edge);
 			}
 
-			foreach(var vertex in new Vertex[] {vul, vur, vlr, vll })
+			//foreach(var pointVertex in new Point[] {vul, vur, vlr, vll })
+			//{
+			//	dcel.Vertices.Add(pointVertex.Point, pointVertex);
+			//}
+			for (var i = 0; i < halfEdges.Count / 2; i++)
 			{
-				dcel.Vertices.Add(vertex.Point, vertex);
+				var edge = halfEdges[i];
+				var vertex = edge.TargetVertex;
+				var point = vertex.Point;
+				dcel.Vertices.Add(point, vertex);
 			}
 
 			return dcel;
@@ -139,10 +224,63 @@ namespace VoronoiModel.PlanarSubdivision
 		/// </summary>
 		/// <param name="v1">The new vertex to add as a point vector.</param>
 		/// <param name="v2">The existing vertex to connect v1 to as a point vector.</param>
-		public void AddVertex(Point v1, Point v2)
+		public void AddVertex(Point2D v1, Point2D v2)
 		{
 			var existingVertex = GetVertex(v2);
-			throw new NotImplementedException();
+			if (existingVertex is null)
+			{
+				var msg = string.Format("Could not find vertex {0} in the DCEL.", v2);
+				Debug.WriteLine(msg, "Warn");
+				throw new VertexNotFoundException(msg);
+			}
+
+			// Find a valid half edge.
+			HalfEdge? h1 = null;
+			foreach (var edge in existingVertex.GetIncidentEdges())
+			{
+				if (!edge.TargetVertex.Equals(existingVertex) || edge.IncidentFace is null)
+					continue;
+
+				if (edge.IncidentFace.ContainsPoint(v1))
+				{
+					h1 = edge;
+					break;
+				}
+			}
+
+			if (h1 is null)
+			{
+				var msg = string.Format("Could not find an edge connected to {0} with a " +
+					"face that contains {1}", v2, v1);
+				Debug.WriteLine(msg, "Warn");
+				throw new InvalidOperationException(msg);
+			}
+
+			var h2 = h1.Next;
+			if (h2 is null)
+			{
+				var msg = string.Format("HalfEdge {0} has no next edge in DCEL. This is bad!", h1);
+				Debug.WriteLine(msg, "Error");
+				throw new CorruptedDCELException(msg);
+			}
+
+			var h3 = new HalfEdge(v1);
+			var h3twin = new HalfEdge(existingVertex);
+
+            // Update prev, next, and twins
+            h1.LinkNext(h3);
+            h3.LinkNext(h3twin);
+			h3twin.LinkNext(h2);
+			h3.LinkTwin(h3twin);
+
+			// Update incident faces
+			h3.IncidentFace = h1.IncidentFace;
+			h3twin.IncidentFace = h2.IncidentFace;
+
+			// Update DCEL fields.
+			AddEdgeToMap(h3);
+			AddEdgeToMap(h3twin);
+			Vertices.Add(v1, h3.TargetVertex);
 		}
 
         /// <summary>
@@ -151,7 +289,7 @@ namespace VoronoiModel.PlanarSubdivision
         /// <param name="v">The vertex to add as a point vector.</param>
         /// <param name="source">The source vertex of the half edge to split.</param>
         /// <param name="target">The target vertex of the half edge to split.</param>
-        public void SplitEdge(Point v, Point source, Point target)
+        public void SplitEdge(Point2D v, Point2D source, Point2D target)
 		{
 			var h = GetEdge(source, target);
 			throw new NotImplementedException();
@@ -165,7 +303,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="u">The second vertex as a point vector.</param>
 		/// <returns>A tuple containing the two newly created faces.</returns>
 		/// <exception cref="NotImplementedException"></exception>
-		public Tuple<Face, Face> SplitFace(Point v, Point u)
+		public Tuple<Face, Face> SplitFace(Point2D v, Point2D u)
 		{
 			throw new NotImplementedException();
 		}
@@ -177,7 +315,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="source">The source vertex of the edge to delete.</param>
 		/// <param name="target">The target vertex of the edge to delete.</param>
 		/// <returns>The new face.</returns>
-		public Face DeleteEdge(Point source, Point target)
+		public Face DeleteEdge(Point2D source, Point2D target)
 		{
 			throw new NotImplementedException();
 		}
@@ -212,9 +350,9 @@ namespace VoronoiModel.PlanarSubdivision
 
 			var emptyFaceColor = "#530059";
 
-            var epsilon = 0.01M;
+            var epsilon = 0.01d;
             Dictionary<Face, int> faceIndexMap = new();
-            Dictionary<Face, Point> faceCentroidMap = new();
+            Dictionary<Face, Point2D> faceCentroidMap = new();
 
 			int i = 0;
 			foreach(var face in Faces)
@@ -270,7 +408,7 @@ namespace VoronoiModel.PlanarSubdivision
 					colors[faceIndexMap[face] % colors.Length];
 
 				DrawSegment(source, target, centroid, direction * epsilon, faceColor, canvas);
-				DrawSegment(twin.SourceVertex?.Point ?? new Point(0, 0), twin.TargetVertex.Point,
+				DrawSegment(twin.SourceVertex?.Point ?? new Point2D(0, 0), twin.TargetVertex.Point,
 					centroid, -1 * direction * epsilon, twinFaceColor, canvas);
 
                 // Update drawn set.
@@ -279,8 +417,8 @@ namespace VoronoiModel.PlanarSubdivision
 			}
 		}
 
-		private void DrawSegment(Point source, Point target, Point centroid,
-			Decimal epsilon, string color, ICanvas canvas)
+		private void DrawSegment(Point2D source, Point2D target, Point2D centroid,
+			double epsilon, string color, ICanvas canvas)
 		{
 			canvas.StrokeColor = Color.FromArgb(color);
 			var shiftedSource = ShiftPointTowardPoint(source, centroid, epsilon);
@@ -298,17 +436,17 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="p2">The destination point.</param>
 		/// <param name="epsilon">The shfit scale.</param>
 		/// <returns>A point along the line p1 -> p2 scaled by epsilon.</returns>
-		private static Point ShiftPointTowardPoint(Point p1, Point p2, Decimal epsilon)
+		private static Point2D ShiftPointTowardPoint(Point2D p1, Point2D p2, double epsilon)
 		{
 			var dx = p2.X - p1.X;
 			var dy = p2.Y - p1.Y;
 			if (dx == 0)
-				return new Point(p1.X, p1.Y + (Math.Sign(dy) * epsilon));
+				return new Point2D(p1.X, p1.Y + (Math.Sign(dy) * epsilon));
 
 			if (dy == 0)
-				return new Point(p1.X + (Math.Sign(dx) * epsilon));
+				return new Point2D(p1.X + (Math.Sign(dx) * epsilon), p1.Y);
 
-			return new Point(p1.X + (dx * epsilon), p1.Y + (dy * epsilon));
+			return new Point2D(p1.X + (dx * epsilon), p1.Y + (dy * epsilon));
 		}
 	}
 }

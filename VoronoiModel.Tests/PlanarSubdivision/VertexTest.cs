@@ -1,5 +1,6 @@
 ﻿using System;
 using VoronoiModel.PlanarSubdivision;
+using VoronoiModel.Geometry;
 
 namespace VoronoiModel.Tests.PlanarSubdivision
 {
@@ -7,22 +8,28 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 	public class VertexTest
 	{
 		Vertex v;
+		HalfEdge emptyEdge;
 
+		Vertex ve;
+		Vertex vne1;
+		Vertex vne2;
+		Vertex vne3;
 
 		[OneTimeSetUp]
 		public void Setup()
 		{
-			v = new Vertex(0, 0);
-		}
+			emptyEdge = new HalfEdge(new Point2D(0, 0));
+			v = emptyEdge.TargetVertex;
+
+            ve = new Vertex(0, 0, emptyEdge);
+            vne1 = new Vertex(0, 1, emptyEdge);
+            vne2 = new Vertex(1, 0, emptyEdge);
+            vne3 = new Vertex(1, 1, emptyEdge);
+        }
 
 		[Test]
 		public void TestEquals()
 		{
-			var ve = new Vertex(0, 0);
-			var vne1 = new Vertex(0, 1);
-			var vne2 = new Vertex(1, 0);
-			var vne3 = new Vertex(1, 1);
-
 			Assert.Multiple(() =>
 			{
 				Assert.That(v, Is.EqualTo(ve), "v is not equal to ve");
@@ -35,11 +42,6 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		[Test]
 		public void TestHashCode()
 		{
-            var ve = new Vertex(0, 0);
-            var vne1 = new Vertex(0, 1);
-            var vne2 = new Vertex(1, 0);
-            var vne3 = new Vertex(1, 1);
-
 			var expectedHash = v.GetHashCode();
 
 			Assert.Multiple(() =>
@@ -58,8 +60,8 @@ namespace VoronoiModel.Tests.PlanarSubdivision
 		[Test]
 		public void TestToString()
 		{
-			var v1 = new Vertex(0, 0);
-			var v2 = new Vertex(0, 1);
+			var v1 = new Vertex(0, 0, emptyEdge);
+			var v2 = new Vertex(0, 1, emptyEdge);
 
 			var format = "({0}, {1})";
 			var v1expected = string.Format(format, 0, 0);

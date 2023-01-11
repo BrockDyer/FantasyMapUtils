@@ -8,10 +8,10 @@ namespace VoronoiModel.Tests.PlanarSubdivision
     [TestFixture]
     public class FaceTest
     {
-        Vertex vul;
-        Vertex vur;
-        Vertex vlr;
-        Vertex vll;
+        Point2D vul;
+        Point2D vur;
+        Point2D vlr;
+        Point2D vll;
 
         HalfEdge h1;
         HalfEdge h1t;
@@ -31,10 +31,10 @@ namespace VoronoiModel.Tests.PlanarSubdivision
         public void Setup()
         {
             // Setup vertices
-            vul = new Vertex(0, 1);
-            vur = new Vertex(1, 1);
-            vlr = new Vertex(1, 0);
-            vll = new Vertex(0, 0);
+            vul = new Point2D(0, 1);
+            vur = new Point2D(1, 1);
+            vlr = new Point2D(1, 0);
+            vll = new Point2D(0, 0);
 
             // Initialize half edges
             h1 = new HalfEdge(vur);
@@ -93,10 +93,9 @@ namespace VoronoiModel.Tests.PlanarSubdivision
         }
 
         [Test]
-        public void TestContainsPoint()
+        public void TestContainsPoint2D()
         {
-            Assert.Throws<NotImplementedException>(
-                () => f1.ContainsPoint(new VoronoiModel.Geometry.Point(0, 0)));
+            Assert.Fail();
         }
 
         [Test]
@@ -119,7 +118,7 @@ namespace VoronoiModel.Tests.PlanarSubdivision
         [Test]
         public void TestCentroid()
         {
-            var expected = new Point(0.5M, 0.5M);
+            var expected = new Point2D(0.5, 0.5);
             var c1 = f1.Centroid();
             var c2 = f2.Centroid();
 
