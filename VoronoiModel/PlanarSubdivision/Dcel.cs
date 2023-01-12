@@ -177,77 +177,70 @@ namespace VoronoiModel.PlanarSubdivision
 		{
 			var dcel = new Dcel();
 
-            // Construct vertices.
-            var vul = new Point2D(upperLeft.X, upperLeft.Y);
-            var vur = new Point2D(lowerRight.X, upperLeft.Y);
-            var vlr = new Point2D(lowerRight.X, lowerRight.Y);
-            var vll = new Point2D(upperLeft.X, lowerRight.Y);
+			// Construct vertices.
+			var vul = new Point2D(upperLeft.X, upperLeft.Y);
+			var vur = new Point2D(lowerRight.X, upperLeft.Y);
+			var vlr = new Point2D(lowerRight.X, lowerRight.Y);
+			var vll = new Point2D(upperLeft.X, lowerRight.Y);
 
-            // Construct half edges
-            var halfEdges = new[] { vul, vur, vlr, vll, vll, vul, vur, vlr }
-	            .Select(vertexPoint => new HalfEdge(vertexPoint)).ToList();
+			var points = new[] { vul, vur, vlr, vll };
+			var vertices = new List<Vertex>();
 
-            // Construct face
-            var face = new Face(halfEdges[0]);
-
-            // Post-construction initialization of half edges.
-            for (var i = 0; i < 4; i++)
-            {
-                var h1 = halfEdges[i];
-                var h2 = halfEdges[i + 4];
-
-				// Set twins
-				//h1.LinkTwin(h2)
-
-				// Manually initializing so that Intellisense and Compiler
-				// recognize that source vertices are not null.
-				h1.Twin = h2;
-				h2.Twin = h1;
-				// h1.SourceVertex = h2.TargetVertex;
-				// h2.SourceVertex = h1.TargetVertex;
-
-				// Set previous and next
-                var prevIndex = (i + 4) % 4;
-                var nextIndex = (i + 1) % 4;
-                h1.Previous = halfEdges[prevIndex];
-                h1.Next = halfEdges[nextIndex];
-
-                // I think this is a bug...
-                h2.Previous = halfEdges[4 + prevIndex];
-                h2.Next = halfEdges[4 + nextIndex];
-
-                // Set the face (only for interior edges)
-                h1.IncidentFace = face;
-            }
-
-            dcel.Faces.Add(face);
-            foreach(var edge in halfEdges)
+			// Create half edges
+			var interiorEdges = new List<HalfEdge>();
+			var exteriorEdges = new List<HalfEdge>(points.Select<Point2D, HalfEdge>(p => null!));
+			
+			for (var i = 0; i < points.Length; i++)
 			{
-				var source = edge.SourceVertex?.Point;
-				var target = edge.TargetVertex.Point;
+				var point = points[i];
+				var interiorEdge = new HalfEdge(point);
+				var vertex = interiorEdge.TargetVertex;
+				var nextInteriorTwin = new HalfEdge(vertex);
+				
+				vertices.Add(vertex);
+				interiorEdges.Add(interiorEdge);
 
-				if (source is null)
-					continue;
-
-				if (!dcel.HalfEdges.ContainsKey(source))
-				{
-					dcel.HalfEdges.Add(source, new Dictionary<Point2D, HalfEdge>());
-				}
-
-				dcel.HalfEdges[source].Add(target, edge);
+				var exteriorIndex = (i + 1) % points.Length;
+				exteriorEdges[exteriorIndex] = nextInteriorTwin;
 			}
-
-			//foreach(var pointVertex in new Point[] {vul, vur, vlr, vll })
-			//{
-			//	dcel.Vertices.Add(pointVertex.Point, pointVertex);
-			//}
-			for (var i = 0; i < halfEdges.Count / 2; i++)
+			
+			// Link half edges
+			for (var i = 0; i < points.Length; i++)
 			{
-				var edge = halfEdges[i];
-				var vertex = edge.TargetVertex;
-				var point = vertex.Point;
-				dcel.Vertices.Add(point, vertex);
+				var edge = interiorEdges[i];
+				var twin = exteriorEdges[i];
+
+				var linkIndex = (i + 1) % points.Length;
+				
+				var next = interiorEdges[linkIndex];
+				edge.LinkNext(next);
+
+				var twinPrev = exteriorEdges[linkIndex];
+				twinPrev.LinkNext(twin);
+				
+				edge.LinkTwin(twin);
 			}
+			
+			// Create faces
+			var face = new Face(interiorEdges[0]);
+			face.LinkEdges();
+			
+			// Update dcel state storage
+			
+			// Add vertices
+			foreach (var vertex in vertices)
+			{
+				dcel.Vertices.Add(vertex.Point, vertex);
+			}
+			
+			// Add edges
+			foreach (var edge in interiorEdges.Union(exteriorEdges))
+			{
+				dcel.AddEdgeToMap(edge);
+			}
+			
+			// Add face
+			dcel.Faces.Add(face);
 
 			return dcel;
         }

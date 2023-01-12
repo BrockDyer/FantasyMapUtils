@@ -61,6 +61,7 @@ namespace VoronoiModel.Tests.PlanarSubdivision
             var actualInteriorPoints = new List<Point2D>();
             var actualExteriorPoints = new List<Point2D>();
             CollectPointsFollowingEdge(upperLeftToUpperRight, actualInteriorPoints);
+            CollectPointsFollowingEdge(upperLeftToUpperRight.Twin!, actualExteriorPoints);
 
             ValidatePointOrder(expectedInteriorPoints, actualInteriorPoints, "Interior points");
             ValidatePointOrder(expectedExteriorPoints, actualExteriorPoints, "Exterior points");
