@@ -32,18 +32,25 @@ namespace VoronoiModel.PlanarSubdivision
 		}
 
 		/// <summary>
-		/// Check if a given point vector is contained within this face. Using
-		/// the logic that a point is within a polygon if a horizontal ray
-		/// shot from the point intersects with an odd number of edges.
+		/// Check if a given point vector is contained within this face. Using the logic that a point is within a
+		/// polygon if a horizontal ray shot from the point intersects with an odd number of edges. A point is also
+		/// inside the face if it is on a boundary segment of the face.
 		/// </summary>
 		/// <param name="point">The point vector to check.</param>
 		/// <returns>True if the point is contained within the face.
 		/// False otherwise.</returns>
 		public bool ContainsPoint(Point2D point)
 		{
-			var intersections = GetFaceEdges()
-				.Select(edge => edge.Segment?.IntersectsWithLeftRayFrom(point) ?? false)
-				.Count(intersects => intersects);
+			var intersections = 0;
+			foreach (var edge in GetFaceEdges())
+			{
+				// Consider a point on the face boundary to be inside the edge.
+				if (edge.Segment?.IsPointOn(point) ?? false) return true;
+				if (edge.Segment?.IntersectsWithLeftRayFrom(point) ?? false)
+				{
+					intersections += 1;
+				}
+			}
 
 			return intersections % 2 == 1;
 		}

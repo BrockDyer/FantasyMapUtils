@@ -73,21 +73,22 @@ namespace VoronoiModel.Geometry
 		/// </summary>
 		/// <param name="other">The other line segment.</param>
 		/// <returns>True if the line segments have a common endpoint.</returns>
-		private bool SharesEndpoint(LineSegment2D other)
+		public bool SharesEndpoint(LineSegment2D other)
 		{
 			return Start.Equals(other.Start) || Start.Equals(other.End) || End.Equals(other.End) ||
 			       End.Equals(other.Start);
 		}
 
 		/// <summary>
-		/// Check if another line segment intersects with this one.
+		/// Check if another line segment intersects with this one. An intersection at the endpoints is counted as true.
+		/// Equivalent segments are also considered to intersect.
 		/// </summary>
 		/// <param name="other">The other line segment.</param>
 		/// <returns>True if the segments intersect.</returns>
 		public bool IntersectsWith(LineSegment2D other)
 		{
-			// Considering same segments to be non-intersecting.
-			if (Equals(other)) return false;
+			// Considering same segments to be intersecting.
+			if (Equals(other)) return true;
 			if (SharesEndpoint(other)) return true;
 			var x = SolveIntersection(other);
 			return x is not null && IsParametricPointOn(x.Get(0), x.Get(1));
@@ -95,7 +96,8 @@ namespace VoronoiModel.Geometry
 
 		/// <summary>
 		/// Check if this line segment intersects with a horizontal line passing
-		/// through the specified intercept.
+		/// through the specified intercept. An intersection at the endpoints is considered true. Equivalent segments
+		/// are also considered to intersect.
 		/// </summary>
 		/// <param name="intercept">The y-intercept of a horizontal line.</param>
 		/// <returns>True if the line intersects with this segment.</returns>
@@ -104,8 +106,8 @@ namespace VoronoiModel.Geometry
 			var otherStart = new Point2D(0, intercept);
 			var otherEnd = new Point2D(1, intercept);
 			var segment = new LineSegment2D(otherStart, otherEnd);
-			// Considering same segments to be non-intersecting.
-			if (Equals(segment)) return false;
+			// Considering same segments to be intersecting.
+			if (Equals(segment)) return true;
 			if (SharesEndpoint(segment)) return true;
 			
 			var x = SolveIntersection(segment);
@@ -130,14 +132,50 @@ namespace VoronoiModel.Geometry
 			return IntersectsWith(raySegment);
 		}
 
-		public Point2D? Evaluate(decimal x)
+		public Point2D? Evaluate(double x)
 		{
-			throw new NotImplementedException();
+			double? slope;
+			try
+			{
+				slope = (End.Y - Start.Y) / (End.X - Start.X);
+			}
+			catch (DivideByZeroException)
+			{
+				slope = null;
+			}
+
+			double? intercept = slope is null
+				? null
+				: (Utils.AreClose(End.Y - Start.Y, 0) ? null : Start.Y - (slope.Value * Start.X));
+
+			return slope is null ? null : new Point2D(x , slope.Value * x + intercept!.Value);
 		}
 
-		public bool IsPointOn(Point2D point)
+		/// <summary>
+		/// Check if a point is on this line segment. If the point is one of the endpoints, this returns true.
+		/// </summary>
+		/// <param name="c">The point to check.</param>
+		/// <returns>True if this point is on the segment.</returns>
+		public bool IsPointOn(Point2D c)
 		{
-			throw new NotImplementedException();
+			// We will refer to Start as A and End as B.
+			var vecAb = new Vector(Start, End);
+			var vecAc = new Vector(Start, c);
+			
+			// Check that the point c is collinear with the start and end.
+			if (!vecAb.Cross2D(vecAc).IsZero()) return false;
+			
+			var dotAb = vecAb.Dot(vecAb);
+			var dotAc = vecAb.Dot(vecAc);
+
+			// Check if the point is on the endpoints
+			if (Utils.AreClose(dotAc, 0) || Utils.AreClose(dotAc, dotAb))
+			{
+				return true;
+			}
+
+			// Check if the point is on segment between endpoints.
+			return dotAc > 0 && dotAc < dotAb;
 		}
 
 		private bool Equals(LineSegment2D other)

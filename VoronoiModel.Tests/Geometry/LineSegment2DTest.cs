@@ -78,11 +78,19 @@ namespace VoronoiModel.Tests.Geometry
 			Assert.Multiple(() =>
 			{
 				// Overlapping line
-				Assert.That(segment1.IntersectsWith(segment1), Is.False, "Overlapping segments are not considered as intersecting.");
+				Assert.That(segment1.IntersectsWith(segment1), Is.True, "Equivalent segments are considered as intersecting.");
 
 				// Common endpoint
 				var overlappingEndpoint = new LineSegment2D(new Point2D(0, 0), new Point2D(-1, -1));
-				Assert.That(segment1.IntersectsWith(overlappingEndpoint), Is.True, "Should be an intersection at (0, 0).");
+				var overlappingEndpoint2 = new LineSegment2D(new Point2D(1, 1), new Point2D(2, 3));
+				Assert.That(segment1.IntersectsWith(overlappingEndpoint), Is.True, "Common endpoints at (0, 0) overlap.");
+				Assert.That(segment1.IntersectsWith(overlappingEndpoint2), Is.True, "Common endpoints at (1, 1) overlap.");
+				
+				// Intersect midsection at endpoint
+				var intersectAtSeg1EndpointInMyMiddle = new LineSegment2D(new Point2D(0, 2), new Point2D(2, 0));
+				var intersectAtSeg1EndpointInMyMiddle2 = new LineSegment2D(new Point2D(-1, 1), new Point2D(1, -1));
+				Assert.That(segment1.IntersectsWith(intersectAtSeg1EndpointInMyMiddle), Is.True, "Should intersect at (1, 1)");
+				Assert.That(segment1.IntersectsWith(intersectAtSeg1EndpointInMyMiddle2), Is.True, "Should intersect at (0, 0)");
 
 				// Point on line
 				var pointOnLine = new LineSegment2D(new Point2D(0, 1), new Point2D(0.5, 0.5));
