@@ -128,6 +128,9 @@ namespace VoronoiModel.PlanarSubdivision
 				HalfEdges.Add(newTarget, new Dictionary<Point2D, HalfEdge>());
 			// The new target becomes the source of the twin, and it keeps its current target.
 			HalfEdges[newTarget].Add(twinTarget, twin);
+			
+			// Update the target
+			edge.TargetVertex = target;
 		}
 
 		/// <summary>
