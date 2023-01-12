@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using VoronoiModel.Geometry;
 
 namespace VoronoiModel.PlanarSubdivision
@@ -14,7 +13,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <summary>
 		/// A half edge incident to this face.
 		/// </summary>
-		public HalfEdge Edge { get; internal set; }
+		private HalfEdge Edge { get; }
 
 		public Face(HalfEdge edge)
 		{
@@ -42,15 +41,9 @@ namespace VoronoiModel.PlanarSubdivision
 		/// False otherwise.</returns>
 		public bool ContainsPoint(Point2D point)
 		{
-			var intersections = 0;
-			foreach (var edge in GetFaceEdges())
-			{
-				var intersects = edge.Segment?.IntersectsWithLeftRayFrom(point) ?? false;
-				if (intersects)
-				{
-					intersections += 1;
-				}
-			}
+			var intersections = GetFaceEdges()
+				.Select(edge => edge.Segment?.IntersectsWithLeftRayFrom(point) ?? false)
+				.Count(intersects => intersects);
 
 			return intersections % 2 == 1;
 		}
@@ -61,8 +54,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <returns>A list of half edges that are incident to this face.</returns>
 		public List<HalfEdge> GetFaceEdges()
 		{
-			var edges = new List<HalfEdge>();
-			edges.Add(Edge);
+			var edges = new List<HalfEdge> { Edge };
 
 			var current = Edge.Next;
 			while (!Edge.Equals(current) && current is not null)
@@ -89,36 +81,35 @@ namespace VoronoiModel.PlanarSubdivision
 			{
 				if (current is null)
 				{
-					var msg = "Face is not defined by complete edges.";
+					const string msg = "Face is not defined by complete edges.";
 					Debug.WriteLine(msg);
 					throw new InvalidOperationException(msg);
 				}
 
 				vertices.Add(current.TargetVertex.Point);
 				current = current.Next;
-				if (EqualityComparer<HalfEdge>.Default.Equals(current, start))
-				{
-					// Need to have the start vertex in twice.
-					vertices.Add(current.TargetVertex.Point);
-					break;
-				}
+				if (!EqualityComparer<HalfEdge>.Default.Equals(current, start)) continue;
+				
+				// Need to have the start vertex in twice.
+				vertices.Add(current.TargetVertex.Point);
+				break;
 			}
 
-			var A = SignedArea(vertices);
-			var CxSum = 0d;
-			var CySum = 0d;
+			var area = SignedArea(vertices);
+			var cxSum = 0d;
+			var cySum = 0d;
 			for (var i = 0; i < vertices.Count - 1; i++)
 			{
 				var vi = vertices[i];
 				var vn = vertices[i + 1];
-				CxSum += (vi.X + vn.X) * ((vi.X * vn.Y) - (vn.X * vi.Y));
-				CySum += (vi.Y + vn.Y) * ((vi.X * vn.Y) - (vn.X * vi.Y));
+				cxSum += (vi.X + vn.X) * ((vi.X * vn.Y) - (vn.X * vi.Y));
+				cySum += (vi.Y + vn.Y) * ((vi.X * vn.Y) - (vn.X * vi.Y));
 			}
 
-			var Cx = (1d / (6d * A)) * CxSum;
-			var Cy = (1d / (6d * A)) * CySum;
+			var cx = (1d / (6d * area)) * cxSum;
+			var cy = (1d / (6d * area)) * cySum;
 
-			return new Point2D(Math.Round(Cx, 3), Math.Round(Cy, 3));
+			return new Point2D(Math.Round(cx, 3), Math.Round(cy, 3));
 		}
 
 		/// <summary>
@@ -128,7 +119,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="vertices">A list of the point vector vertices. Must
 		/// have the start point duplicated at the end.</param>
 		/// <returns>The signed area.</returns>
-		private double SignedArea(List<Point2D> vertices)
+		private static double SignedArea(IReadOnlyList<Point2D> vertices)
 		{
 			var sum = 0d;
 			for (var i = 0; i < vertices.Count - 1; i++)
@@ -145,62 +136,61 @@ namespace VoronoiModel.PlanarSubdivision
         // A face, f1, is equivalent to another face, f2, if they have the same
         // edges.
 
-        public override bool Equals(object? obj)
-        {
-			//Debug.WriteLine("Calling equals on Face");
-			if (obj is Face f2)
-			{
-
-				HalfEdge? start = null;
-				HalfEdge? current_f1 = null;
-				HalfEdge? current_f2 = null;
-
-				// Find an edge that the faces share.
-				foreach (var edge in f2.GetFaceEdges())
-				{
-					if (Edge.Equals(edge))
-					{
-						start = Edge;
-						current_f1 = Edge;
-						current_f2 = edge;
-						break;
-					}
-				}
-
-				// If they do not share an edge they are not equal
-				if (start is null) return false;
-
-				// Walk through the edges on each face. They should be lockstep
-				while (true)
-				{
-					if (!EqualityComparer<HalfEdge>.Default.Equals(current_f1, current_f2))
-						return false;
-
-					current_f1 = current_f1?.Next;
-					current_f2 = current_f2?.Next;
-
-					if (EqualityComparer<HalfEdge>.Default.Equals(current_f1, start))
-						break;
-
-				}
-
-				// If we get to this point then the faces are equal.
-				return true;
-			}
-			return false;
-        }
-
-        public override int GetHashCode()
-        {
-			//Debug.WriteLine("Calling hashcode on Face");
-			var hash = 17;
-			foreach(var edge in GetFaceEdges())
-			{
-				hash += edge.GetHashCode();
-			}
-			hash *= 33;
-			return hash;
-        }
+   //      public override bool Equals(object? obj)
+   //      {
+			// //Debug.WriteLine("Calling equals on Face");
+			// if (obj is Face f2)
+			// {
+   //
+			// 	HalfEdge? start = null;
+			// 	HalfEdge? currentF1 = null;
+			// 	HalfEdge? currentF2 = null;
+   //
+			// 	// Find an edge that the faces share.
+			// 	foreach (var edge in f2.GetFaceEdges())
+			// 	{
+			// 		if (!Edge.Equals(edge)) continue;
+			// 		
+			// 		start = Edge;
+			// 		currentF1 = Edge;
+			// 		currentF2 = edge;
+			// 		break;
+			// 	}
+   //
+			// 	// If they do not share an edge they are not equal
+			// 	if (start is null) return false;
+   //
+			// 	// Walk through the edges on each face. They should be lockstep
+			// 	while (true)
+			// 	{
+			// 		if (!EqualityComparer<HalfEdge>.Default.Equals(currentF1, currentF2))
+			// 			return false;
+   //
+			// 		currentF1 = currentF1?.Next;
+			// 		currentF2 = currentF2?.Next;
+   //
+			// 		if (EqualityComparer<HalfEdge>.Default.Equals(currentF1, start))
+			// 			break;
+   //
+			// 	}
+   //
+			// 	// If we get to this point then the faces are equal.
+			// 	return true;
+			// }
+			// return false;
+   //      }
+   //
+   //      public override int GetHashCode()
+   //      {
+			// //Debug.WriteLine("Calling hashcode on Face");
+			// var hash = 17;
+			// foreach(var edge in GetFaceEdges())
+			// {
+			// 	hash += edge.GetHashCode();
+			// }
+			// hash *= 33;
+			// return hash;
+   //      }
 
         // ================================================================== \\
 
@@ -210,7 +200,7 @@ namespace VoronoiModel.PlanarSubdivision
 			var prefix = "";
 			foreach (var edge in GetFaceEdges())
 			{
-				output += prefix + edge.ToString();
+				output += prefix + edge;
 				prefix = "; ";
 			}
 

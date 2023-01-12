@@ -12,7 +12,7 @@ namespace VoronoiModel
         private readonly List<VoronoiPoint> points = new List<VoronoiPoint>();
         private Random random = new Random();
 
-        private DCEL? DCEL;
+        private Dcel? DCEL;
 
         public void AddPoint(VoronoiPoint point)
         {
@@ -38,7 +38,7 @@ namespace VoronoiModel
                 point.Y = random.NextDouble() * maxY + minY;
             }
 
-            DCEL = DCEL.Create(new Geometry.Point2D(minX, minY), new Geometry.Point2D(maxX, maxY));
+            DCEL = Dcel.Create(new Geometry.Point2D(minX, minY), new Geometry.Point2D(maxX, maxY));
         }
 
         public void PrintPoints()

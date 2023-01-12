@@ -18,35 +18,16 @@ namespace VoronoiModel.PlanarSubdivision
 		/// The vertex that this half edge is coming out of.
 		/// </summary>
 
-		// The backing field for SourceVertex property.
-		private Vertex? _sourceVertex;
+		/// <summary>
+		/// The vertex that this half edge is coming from.
+		/// </summary>
+		public Vertex? SourceVertex => Twin?.TargetVertex;
 
 		/// <summary>
-		/// The vertex that this half edge is coming from. When this is set, it
-		/// will automatically update the Segment property.
+		/// The line segment that represents this half edge.
 		/// </summary>
-		public Vertex? SourceVertex {
-			get
-			{
-				return _sourceVertex;
-			}
-			internal set
-			{
-				if (value is null)
-				{
-					Segment = null;
-					return;
-				};
-
-				_sourceVertex = value;
-				Segment = new LineSegment2D(_sourceVertex.Point, TargetVertex.Point);
-			}
-		}
-
-		/// <summary>
-		/// The actual segment that represents this half edge.
-		/// </summary>
-		public LineSegment2D? Segment { get; internal set; }
+		public LineSegment2D? Segment => SourceVertex is not null ? 
+			new LineSegment2D(SourceVertex.Point, TargetVertex.Point) : null;
 
 		/// <summary>
 		/// The twin of this half edge.
@@ -94,9 +75,7 @@ namespace VoronoiModel.PlanarSubdivision
         public virtual void LinkTwin(HalfEdge twin)
 		{
 			Twin = twin;
-			SourceVertex = twin.TargetVertex;
 			twin.Twin = this;
-			twin.SourceVertex = TargetVertex;
 		}
 
 		/// <summary>
@@ -107,38 +86,37 @@ namespace VoronoiModel.PlanarSubdivision
 		{
 			Next = next;
 			next.Previous = this;
-			next.SourceVertex = TargetVertex;
 		}
 
         // ============================ Equality ============================ \\
         // A half edge, h1, is equivalent to another, h2, if they have the same
         // source and the same target vertices.
 
-        public override bool Equals(object? obj)
-        {
-			if (obj is HalfEdge h2)
-			{
-				var sourcesMatch = this.SourceVertex?.Equals(h2.SourceVertex) ?? false;
-				var targetsMatch = this.TargetVertex.Equals(h2.TargetVertex);
-				return sourcesMatch && targetsMatch;
-			}
-
-			return false;
-        }
-
-        public override int GetHashCode()
-        {
-			var hash = 17;
-			hash = hash * 33 + (SourceVertex?.GetHashCode() ?? 17);
-			hash = hash * 33 + TargetVertex.GetHashCode();
-			return hash;
-        }
+   //      public override bool Equals(object? obj)
+   //      {
+			// if (obj is HalfEdge h2)
+			// {
+			// 	var sourcesMatch = this.SourceVertex?.Equals(h2.SourceVertex) ?? false;
+			// 	var targetsMatch = this.TargetVertex.Equals(h2.TargetVertex);
+			// 	return sourcesMatch && targetsMatch;
+			// }
+   //
+			// return false;
+   //      }
+   //
+   //      public override int GetHashCode()
+   //      {
+			// var hash = 17;
+			// hash = hash * 33 + (SourceVertex?.GetHashCode() ?? 17);
+			// hash = hash * 33 + TargetVertex.GetHashCode();
+			// return hash;
+   //      }
 
         // ================================================================== \\
 
         public override string ToString()
         {
-			return string.Format("{0} -> {1}", SourceVertex, TargetVertex);
+			return $"{SourceVertex} -> {TargetVertex}";
         }
     }
 }

@@ -27,35 +27,35 @@ namespace VoronoiModel.Tests.PlanarSubdivision
             vne3 = new Vertex(1, 1, emptyEdge);
         }
 
-		[Test]
-		public void TestEquals()
-		{
-			Assert.Multiple(() =>
-			{
-				Assert.That(v, Is.EqualTo(ve), "v is not equal to ve");
-				Assert.That(v, Is.Not.EqualTo(vne1), "v is equal to vne1");
-				Assert.That(v, Is.Not.EqualTo(vne2), "v is equal to vne2");
-				Assert.That(v, Is.Not.EqualTo(vne3), "v is equalt to vne3");
-			});
-		}
-
-		[Test]
-		public void TestHashCode()
-		{
-			var expectedHash = v.GetHashCode();
-
-			Assert.Multiple(() =>
-			{
-				Assert.That(ve.GetHashCode(), Is.EqualTo(expectedHash),
-					"ve hash is not equal to v hash");
-				Assert.That(vne1.GetHashCode(), Is.Not.EqualTo(expectedHash),
-					"vne1 hash is equal to v hash");
-				Assert.That(vne2.GetHashCode(), Is.Not.EqualTo(expectedHash),
-					"vne2 hash is equal to v hash");
-				Assert.That(vne3.GetHashCode(), Is.Not.EqualTo(expectedHash),
-					"vne3 hash is equal to v hash");
-			});
-        }
+		// [Test]
+		// public void TestEquals()
+		// {
+		// 	Assert.Multiple(() =>
+		// 	{
+		// 		Assert.That(v, Is.EqualTo(ve), "v is not equal to ve");
+		// 		Assert.That(v, Is.Not.EqualTo(vne1), "v is equal to vne1");
+		// 		Assert.That(v, Is.Not.EqualTo(vne2), "v is equal to vne2");
+		// 		Assert.That(v, Is.Not.EqualTo(vne3), "v is equalt to vne3");
+		// 	});
+		// }
+  //
+		// [Test]
+		// public void TestHashCode()
+		// {
+		// 	var expectedHash = v.GetHashCode();
+  //
+		// 	Assert.Multiple(() =>
+		// 	{
+		// 		Assert.That(ve.GetHashCode(), Is.EqualTo(expectedHash),
+		// 			"ve hash is not equal to v hash");
+		// 		Assert.That(vne1.GetHashCode(), Is.Not.EqualTo(expectedHash),
+		// 			"vne1 hash is equal to v hash");
+		// 		Assert.That(vne2.GetHashCode(), Is.Not.EqualTo(expectedHash),
+		// 			"vne2 hash is equal to v hash");
+		// 		Assert.That(vne3.GetHashCode(), Is.Not.EqualTo(expectedHash),
+		// 			"vne3 hash is equal to v hash");
+		// 	});
+  //       }
 
 		[Test]
 		public void TestToString()

@@ -64,33 +64,33 @@ namespace VoronoiModel.Tests.PlanarSubdivision
             f4 = new Face(h4);
         }
 
-        [Test]
-        public void TestEquals()
-        {
-            Assert.Multiple(() =>
-            {
-                Assert.That(f2, Is.EqualTo(f1), "f2 not equal to f1");
-                Assert.That(f3, Is.EqualTo(f1), "f3 not equal to f1");
-                Assert.That(f4, Is.EqualTo(f1), "f4 not equal to f1");
-                Assert.That(f3, Is.EqualTo(f2), "f3 not eqaul to f2");
-            });
-        }
-
-        [Test]
-        public void TestGetHashCode()
-        {
-            var hash1 = f1.GetHashCode();
-            var hash2 = f2.GetHashCode();
-            var hash3 = f3.GetHashCode();
-            var hash4 = f4.GetHashCode();
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(hash2, Is.EqualTo(hash1), "hash2 not equal to hash1");
-                Assert.That(hash3, Is.EqualTo(hash1), "hash3 not equal to hash1");
-                Assert.That(hash4, Is.EqualTo(hash1), "hash4 not equal to hash1");
-            });
-        }
+        // [Test]
+        // public void TestEquals()
+        // {
+        //     Assert.Multiple(() =>
+        //     {
+        //         Assert.That(f2, Is.EqualTo(f1), "f2 not equal to f1");
+        //         Assert.That(f3, Is.EqualTo(f1), "f3 not equal to f1");
+        //         Assert.That(f4, Is.EqualTo(f1), "f4 not equal to f1");
+        //         Assert.That(f3, Is.EqualTo(f2), "f3 not eqaul to f2");
+        //     });
+        // }
+        //
+        // [Test]
+        // public void TestGetHashCode()
+        // {
+        //     var hash1 = f1.GetHashCode();
+        //     var hash2 = f2.GetHashCode();
+        //     var hash3 = f3.GetHashCode();
+        //     var hash4 = f4.GetHashCode();
+        //
+        //     Assert.Multiple(() =>
+        //     {
+        //         Assert.That(hash2, Is.EqualTo(hash1), "hash2 not equal to hash1");
+        //         Assert.That(hash3, Is.EqualTo(hash1), "hash3 not equal to hash1");
+        //         Assert.That(hash4, Is.EqualTo(hash1), "hash4 not equal to hash1");
+        //     });
+        // }
 
         [Test]
         public void TestContainsPoint2D()

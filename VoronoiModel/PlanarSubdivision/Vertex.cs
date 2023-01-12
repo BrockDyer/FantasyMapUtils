@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using VoronoiModel.Geometry;
+﻿using VoronoiModel.Geometry;
 
 namespace VoronoiModel.PlanarSubdivision
 {
@@ -10,8 +8,8 @@ namespace VoronoiModel.PlanarSubdivision
     /// </summary>
     public class Vertex
     {
-        public Point2D Point { get; internal set; }
-        public HalfEdge Edge { get; internal set; }
+        public Point2D Point { get; }
+        private HalfEdge Edge { get; set; }
 
         public Vertex(double x1, double x2, HalfEdge edge) : this(new Point2D(x1, x2), edge) { }
 
@@ -31,22 +29,36 @@ namespace VoronoiModel.PlanarSubdivision
             var edges = new List<HalfEdge>();
             var current = startEdge;
 
+            var moveToNext = Equals(current.TargetVertex);
+            while (true)
+            {
+                edges.Add(current!);
+
+                moveToNext = !moveToNext;
+
+                if (current!.Equals(startEdge))
+                {
+                    break;
+                }
+                
+                current = moveToNext ? current.Next : current.Twin;
+            }
             return edges;
         }
 
         // ============================ Equality ============================ \\
         // A vertex is equal to another if they have the same point.
 
-        public override bool Equals(object? obj)
-        {
-            return obj is Vertex vertex &&
-                   EqualityComparer<Point2D>.Default.Equals(Point, vertex.Point);
-        }
-
-        public override int GetHashCode()
-        {
-            return Point.GetHashCode();
-        }
+        // public override bool Equals(object? obj)
+        // {
+        //     return obj is Vertex vertex &&
+        //            EqualityComparer<Point2D>.Default.Equals(Point, vertex.Point);
+        // }
+        //
+        // public override int GetHashCode()
+        // {
+        //     return Point.GetHashCode();
+        // }
 
         // ================================================================== \\
 
