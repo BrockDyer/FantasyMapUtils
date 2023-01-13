@@ -174,7 +174,7 @@ namespace VoronoiModel.Tests.PlanarSubdivision
             // Perform
 
             // Split across the main diagonal.
-            _dcel.SplitFace(_upperLeft, _lowerRight);
+            var splitFaces = _dcel.SplitFace(_upperLeft, _lowerRight);
 
             // Validate
 
@@ -187,6 +187,11 @@ namespace VoronoiModel.Tests.PlanarSubdivision
             var upperRightFace = _dcel.GetFaceWithEdge(_upperLeft, _upperRight);
             Assert.Multiple(() =>
             {
+                // Check that the faces returned are the correct ones
+                Assert.That(new[] {splitFaces.Item1, splitFaces.Item2}, 
+                    Is.EquivalentTo(new [] {bottomLeftFace, upperRightFace}),
+                    "Returned faces are not the correct ones.");
+                
                 // Check that the faces retrieved are not null.
                 Assert.That(bottomLeftFace, Is.Not.Null, "Bottom left face is null");
                 Assert.That(upperRightFace, Is.Not.Null, "Upper right face is null");

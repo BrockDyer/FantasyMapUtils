@@ -191,7 +191,7 @@ namespace VoronoiModel.PlanarSubdivision
 
 			// Create half edges
 			var interiorEdges = new List<HalfEdge>();
-			var exteriorEdges = new List<HalfEdge>(points.Select<Point2D, HalfEdge>(p => null!));
+			var exteriorEdges = new List<HalfEdge>(points.Select<Point2D, HalfEdge>(_ => null!));
 			
 			for (var i = 0; i < points.Length; i++)
 			{
@@ -365,7 +365,78 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <exception cref="NotImplementedException"></exception>
 		public Tuple<Face, Face> SplitFace(Point2D v, Point2D u)
 		{
-			throw new NotImplementedException();
+			// Find an edge going from v, say hv, and an edge going from u, say hu, such that the incident faces
+			// are the same. Must also make sure that the line between the two points does not intersect any edge of the
+			// face.
+			HalfEdge? hv = null, hu = null, hvPrev = null, huPrev = null;
+			Face? originalFace = null;
+			if (!HalfEdges.ContainsKey(v) || !HalfEdges.ContainsKey(u))
+				throw new VertexNotFoundException($"DCEL does not contain both v ({v}) and u ({u})");
+
+			void FindPointers()
+			{
+				foreach (var hvCandidate in HalfEdges[v].Values)
+				{
+					foreach (var huCandidate in HalfEdges[u].Values
+						         .Where(huCandidate => huCandidate.IncidentFace?.Equals(hvCandidate.IncidentFace) ?? false))
+					{
+						originalFace = huCandidate.IncidentFace;
+						var candidateSegment = new LineSegment2D(v, u);
+						var canSplit = (originalFace?.GetFaceEdges() ?? new List<HalfEdge>())
+							.Select(edge => edge.Segment?.IntersectionWith(candidateSegment))
+							.Where(intersection => intersection is not null)
+							.All(intersection => intersection!.Equals(v) || intersection.Equals(u));
+
+						if (!canSplit) continue;
+						
+						hv = hvCandidate;
+						hvPrev = hv.Previous;
+						hu = huCandidate;
+						huPrev = hu.Previous;
+						return;
+					}
+				}
+			}
+			
+			FindPointers();
+			if (new object?[] { hv, hu, hvPrev, huPrev, originalFace }.Any(elem => elem is null))
+			{
+				throw new InvalidOperationException($"Cannot split a face between {v} and {u}");
+			}
+
+			// Create new edges
+			var newEdge = new HalfEdge(u);
+			var newEdgeTwin = new HalfEdge(v);
+			
+			// Link edges
+			hvPrev!.LinkNext(newEdge);
+			newEdge.LinkNext(hu!);
+			huPrev!.LinkNext(newEdgeTwin);
+			newEdgeTwin.LinkNext(hv!);
+			
+			// Set twins
+			newEdge.LinkTwin(newEdgeTwin);
+			
+			// Create new faces
+			var f1 = new Face(newEdge);
+			var f2 = new Face(newEdgeTwin);
+			
+			// Update edges on face
+			f1.LinkEdges();
+			f2.LinkEdges();
+			
+			// Add new edges
+			AddEdgeToMap(newEdge);
+			AddEdgeToMap(newEdgeTwin);
+			
+			// Remove old face
+			Faces.Remove(originalFace!);
+			
+			// Add new faces
+			Faces.Add(f1);
+			Faces.Add(f2);
+			
+			return Tuple.Create(f1, f2);
 		}
 
 		/// <summary>
