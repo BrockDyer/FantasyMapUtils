@@ -26,33 +26,48 @@ public class BeachLine
     /// <returns>The center of the circle tangent to the sweep line that passes through p1 and p2.</returns>
     public static Point2D ComputeBreakpoint(Point2D p1, Point2D p2, double y)
     {
-        // The center point of the circle will be on the perpendicular bisector of p1 and p2, it will
-        // also be equidistant from p1, p2, and y. Thus we can use the quadratic formula to solve the
-        // resulting system of equations.
-        
-        var a = 2 * (p1.Y - p2.Y) / (p2.X - p1.X);
-        var b = 2 * (Math.Pow(p2.Y, 2) - Math.Pow(p1.Y, 2)) / (p2.X - p1.X);
-        var c = 
-            (Math.Pow(p1.Y, 3) - Math.Pow(p2.Y, 3) - 
-                p1.Y * (Math.Pow(p1.X, 2) + Math.Pow(p2.Y, 2) + Math.Pow(p2.X, 2)) + 
-                p2.Y * (Math.Pow(p1.X, 2) - Math.Pow(p1.Y, 2) - Math.Pow(p2.X, 2))
-            ) / 
-                (2 * (p2.X - p1.X));
+        var ax = p1.X;
+        var ay = p1.Y;
+        var bx = p2.X;
+        var by = p2.Y;
 
-        var bSquaredMinus4Ac = Math.Sqrt(Math.Pow(b, 2) - 4 * a * c);
-        var twoA = 2 * a;
-        var cyp = twoA == 0 ? 0 : (-b + bSquaredMinus4Ac) / twoA;
-        var cyn = twoA == 0 ? 0 : (-b - bSquaredMinus4Ac) / twoA;
+        double ComputeCy(double cx)
+        {
+            return (Math.Pow(cx - ax, 2) + Math.Pow(ay, 2) - Math.Pow(y, 2)) / (2 * (ay - y));
+        }
 
-        double cy;
-        if (0 <= cyp && cyp < y) cy = cyp;
-        else cy = cyn;
+        if (Utils.AreClose(ay - by, 0))
+        {
+            var cx = (ax + bx) / 2;
+            return new Point2D(cx, ComputeCy(cx));
+        }
 
-        // var r = y - cy;
-        var cx = (Math.Pow(p1.Y - cy, 2) + Math.Pow(p2.Y - cy, 2) - Math.Pow(p1.X, 2) + Math.Pow(p2.X, 2)) /
-                 (2 * (p2.X - p1.X));
+        var m = (ay - by) / (ax - bx);
+        var mb = -1 / m;
+        var py = (ay + by) / 2;
+        var px = (ax + bx) / 2;
 
-        return new Point2D(cx, cy);
+        var b = -2 * (ax + (ay - y) * mb);
+        var c = Math.Pow(ax, 2) + Math.Pow(ay, 2) - Math.Pow(y, 2) - 2 * (ay - y) * (py - mb * px);
+
+        var sqrtPart = Math.Sqrt(Math.Pow(b, 2) - 4 * c);
+        var cx1 = (-b + sqrtPart) / 2;
+        var cx2 = (-b - sqrtPart) / 2;
+
+        var leftBound = Math.Min(ax, bx);
+        var rightBound = Math.Max(ax, bx);
+
+        if (cx1 >= leftBound && cx1 <= rightBound)
+        {
+            return new Point2D(cx1, ComputeCy(cx1));
+        }
+
+        if (cx2 >= leftBound && cx2 <= rightBound)
+        {
+            return new Point2D(cx2, ComputeCy(cx2));
+        }
+
+        throw new InvalidOperationException($"No solution for {p1} and {p2} with sweep line at {y}");
     }
     
     /// <summary>
