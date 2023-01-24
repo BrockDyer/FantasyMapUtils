@@ -133,4 +133,52 @@ public class BeachLineTest
             Assert.That(_beachLine.ToString(), Is.EqualTo($"<{_p1}, {_p3}, {_p2}, {_p1}>"));
         });
     }
+
+    [Test]
+    public void TestFindMiddleArc()
+    {
+        // Setup
+        var p1 = new Point2D(1, 0);
+        var p2 = new Point2D(1.2, 0.7);
+        var p3 = new Point2D(3, 0.8);
+        var p4 = new Point2D(2.2, 1);
+
+        var beachLine = new BeachLine(p1);
+        
+        void AddNext(Point2D newPoint)
+        {
+            var entryAbove = beachLine.Search(newPoint.Y, newPoint);
+            beachLine.InsertAndSplit(entryAbove, newPoint);
+        }
+        
+        AddNext(p2);
+        AddNext(p3);
+        AddNext(p4);
+        
+        // Assert beach line is constructed properly
+        Assert.That(beachLine.ToString(), Is.EqualTo($"<{p1}, {p2}, {p1}, {p4}, {p1}, {p3}, {p1}>"), "Beach line not constructed correctly");
+
+        var toFind1 = Tuple.Create(p1, p2, p1);
+        var toFind2 = Tuple.Create(p1, p4, p1);
+        var toFind3 = Tuple.Create(p4, p1, p3);
+
+        var expected1 = new BeachLineEntry(1, p2);
+        var expected2 = new BeachLineEntry(3, p4);
+        var expected3 = new BeachLineEntry(4, p1);
+
+        var sweepLine = p4.Y + 0.001;
+        
+        // Perform
+        var result1 = beachLine.FindArcInMiddle(toFind1, sweepLine);
+        var result2 = beachLine.FindArcInMiddle(toFind2, sweepLine);
+        var result3 = beachLine.FindArcInMiddle(toFind3, sweepLine);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result1, Is.EqualTo(expected1), "First result incorrect");
+            Assert.That(result2, Is.EqualTo(expected2), "Second result incorrect");
+            Assert.That(result3, Is.EqualTo(expected3), "Third result incorrect");
+        });
+    }
 }

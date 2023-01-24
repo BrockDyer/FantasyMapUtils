@@ -12,6 +12,26 @@ public class BeachLineEntry
         Index = index;
         Site = site;
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is BeachLineEntry entry)
+        {
+            return entry.Index == Index && entry.Site.Equals(Site);
+        }
+
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Index, Site);
+    }
+
+    public override string ToString()
+    {
+        return $"({Site} at index {Index})";
+    }
 }
 public class BeachLine
 {
@@ -139,6 +159,90 @@ public class BeachLine
     public void Delete(BeachLineEntry entry)
     {
         _beachLine.RemoveAt(entry.Index);
+    }
+
+    /// <summary>
+    /// Find the entry that lies in the middle of a triple on the beach line. There is only ever one instance
+    /// of a triple in the beach line.
+    /// </summary>
+    /// <param name="triple">The triple of points to search for.</param>
+    /// <param name="sweepLine">The height of the sweep line.</param>
+    /// <returns>The entry for the arc in the middle of the triple.</returns>
+    public BeachLineEntry FindArcInMiddle(Tuple<Point2D, Point2D, Point2D> triple, double sweepLine)
+    {
+        if (_beachLine.Count < 3)
+            throw new InvalidOperationException("Cannot find arc in middle with less than 3 arcs.");
+        
+        var start = 0;
+        var end = _beachLine.Count - 1;
+
+        var tripleLeftBreakpoint = ComputeBreakpoint(triple.Item1, triple.Item2, sweepLine);
+
+        // Function to check that the current state is a match.
+        bool IsMatch(Point2D left, Point2D center, Point2D right)
+        {
+            var leftMatch = left.Equals(triple.Item1);
+            var centerMatch = center.Equals(triple.Item2);
+            var rightMatch = right.Equals(triple.Item3);
+
+            return leftMatch && centerMatch && rightMatch;
+        }
+        
+        while (true)
+        {
+            var middle = (int)Math.Round((start + end) / 2d);
+
+            var middleArc = _beachLine[middle];
+
+            var leftArc = _beachLine[middle - 1];
+            var rightArc = _beachLine[middle + 1];
+
+            // If we have found the entry, return it
+            if (IsMatch(leftArc, middleArc, rightArc))
+            {
+                return new BeachLineEntry(middle, middleArc);
+            }
+
+            // Determine which way to search next.
+            var leftBreakpoint = ComputeBreakpoint(leftArc, middleArc, sweepLine);
+            if (tripleLeftBreakpoint.X <= leftBreakpoint.X)
+            {
+                end = middle;
+            }
+            else
+            {
+                start = middle;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Get the consecutive triples from the beachline.
+    /// </summary>
+    /// <returns>An enumerable collection of consecutive triples on the beachline.</returns>
+    public IEnumerable<Tuple<Point2D, Point2D, Point2D>> GetTriples()
+    {
+        var result = new List<Tuple<Point2D, Point2D, Point2D>>();
+        for (var i = 1; i < _beachLine.Count - 1; i += 1)
+        {
+            var left = _beachLine[i - 1];
+            var center = _beachLine[i];
+            var right = _beachLine[i + 1];
+            
+            result.Add(Tuple.Create(left, center, right));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Get the beach line element at the specified index.
+    /// </summary>
+    /// <param name="i">The index to get at.</param>
+    /// <returns>The point that creates the arc at the index.</returns>
+    public Point2D Get(int i)
+    {
+        return _beachLine[i];
     }
 
     public override string ToString()

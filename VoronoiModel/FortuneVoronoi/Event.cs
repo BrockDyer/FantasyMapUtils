@@ -2,31 +2,40 @@ using VoronoiModel.Geometry;
 
 namespace VoronoiModel.FortuneVoronoi;
 
-public class Event
+internal class Event
 {
-    private Point2D location;
+    /// <summary>
+    /// The location of the event.
+    /// </summary>
+    public Point2D Location { get; }
+    /// <summary>
+    /// A flag if the event is still valid or not.
+    /// </summary>
     public bool IsValid { get; internal set; }
 
-    public Event(Point2D location)
+    protected Event(Point2D location)
     {
-        this.location = location;
+        Location = location;
     }
 }
 
-public class SiteEvent : Event
+/// <summary>
+/// The event that occurs at a new voronoi site.
+/// </summary>
+internal class SiteEvent : Event
 {
-    public Point2D Site { get; }
-    public SiteEvent(Point2D location, Point2D site) : base(location)
-    {
-        Site = site;
-    }
+    public SiteEvent(Point2D location) : base(location) {}
 }
 
-public class EdgeIntersectionEvent : Event
+/// <summary>
+/// The event that occurs when three arcs on the beach line squeeze together to form a voronoi edge.
+/// </summary>
+internal class VertexEvent : Event
 {
-    
-    public EdgeIntersectionEvent(Point2D location) : base(location)
+    public Tuple<Point2D, Point2D, Point2D> Triple { get; }
+
+    public VertexEvent(Point2D location, Tuple<Point2D, Point2D, Point2D> triple) : base(location)
     {
-        
+        Triple = triple;
     }
 }

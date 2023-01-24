@@ -1,6 +1,6 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Maui.Graphics;
+using VoronoiModel.FortuneVoronoi;
 using VoronoiModel.PlanarSubdivision;
 using VoronoiModel.Services;
 using VoronoiModel.Geometry;
@@ -9,15 +9,15 @@ namespace VoronoiModel
 {
 	public class VoronoiService : IVoronoiService
 	{
-        private readonly List<VoronoiPoint> points = new List<VoronoiPoint>();
-        private Random random = new Random();
+        private readonly List<VoronoiPoint> _points = new();
+        private readonly Random _random = new();
 
-        private Dcel? DCEL;
+        private Dcel? _dcel;
 
         public void AddPoint(VoronoiPoint point)
         {
-            points.Add(point);
-            Debug.WriteLine(string.Format("Added point {0}", point));
+            _points.Add(point);
+            Debug.WriteLine($"Added point {point}");
         }
 
         public void ComputeVoronoi()
@@ -27,23 +27,24 @@ namespace VoronoiModel
 
         public List<VoronoiPoint> GetPoints()
         {
-            return points;
+            return _points;
         }
 
         public void InitPoints(double minX, double minY, double maxX, double maxY)
         {
-            foreach (var point in points)
+            foreach (var point in _points)
             {
-                point.X = random.NextDouble() * maxX + minX;
-                point.Y = random.NextDouble() * maxY + minY;
+                point.X = _random.NextDouble() * maxX + minX;
+                point.Y = _random.NextDouble() * maxY + minY;
             }
 
-            DCEL = Dcel.Create(new Geometry.Point2D(minX, minY), new Geometry.Point2D(maxX, maxY));
+            _dcel = Algorithm.ComputeVoronoi(new Point2D(minX, minY), new Point2D(maxX, maxY), 
+                _points.Select(p => new Point2D(p.X.GetValueOrDefault(0), p.Y.GetValueOrDefault(0))));
         }
 
         public void PrintPoints()
         {
-            foreach (var p in points)
+            foreach (var p in _points)
             {
                 Debug.WriteLine(p);
             }
@@ -56,7 +57,7 @@ namespace VoronoiModel
 
         public void Visualize(ICanvas canvas)
         {
-            DCEL?.Visualize(canvas);
+            _dcel?.Visualize(canvas);
         }
     }
 }
