@@ -26,7 +26,7 @@ namespace MarketAreas.ViewModels
         /// <summary>
         /// A collection of voronoi points in the model.
         /// </summary>
-		public ObservableCollection<VoronoiPoint> VoronoiPoints { get; set; } = new();
+        private ObservableCollection<VoronoiPoint> VoronoiPoints { get; set; } = new();
 
         public Drawables.VisualizationDrawable VisualizationDrawable { get; }
         public Action InvalidateVisualization { get; set; }
@@ -47,7 +47,7 @@ namespace MarketAreas.ViewModels
         /// </summary>
         /// <param name="anchor">The element to anchor the popup to.</param>
         [RelayCommand]
-        public void DisplayPointInputPopup(View anchor)
+        private void DisplayPointInputPopup(View anchor)
         {
 	        var pointInputPopup = new PointInputPopup(AddVoronoiPoint)
             {
@@ -60,7 +60,7 @@ namespace MarketAreas.ViewModels
         /// Handle the Start button being clicked.
         /// </summary>
         [RelayCommand]
-        public void Start()
+        private void Start()
         {
 	        // Initialize the voronoi centroids.
             var canvasDims = VisualizationDrawable.GetCanvasSize();

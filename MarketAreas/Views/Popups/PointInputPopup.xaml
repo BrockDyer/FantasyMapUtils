@@ -7,8 +7,7 @@
 
         <HorizontalStackLayout>
             <Label Text="Point Name"
-                   VerticalOptions="Center"
-                   Style="{StaticResource InputLabel}"/>
+                   VerticalOptions="Center"/>
 
             <Entry x:Name="PointNameEntry"
                    Completed="OnPointNameInput"
@@ -18,8 +17,7 @@
 
         <HorizontalStackLayout>
             <Label Text="Point Weight"
-                   VerticalOptions="Center"
-                   Style="{StaticResource InputLabel}"/>
+                   VerticalOptions="Center"/>
 
             <Entry x:Name="PointWeightEntry"
                    Completed="OnPointWeightInput"
@@ -39,13 +37,11 @@
 
         <Button x:Name="AddPointButton"
                 Clicked="OnAddPointClicked"
-                Text="Add"
-                Style="{StaticResource ConfirmButton}"/>
+                Text="Add"/>
 
         <Button x:Name="CancelButton"
                 Clicked="OnCancelClicked"
-                Text="Cancel"
-                Style="{StaticResource CancelButton}"/>
+                Text="Cancel"/>
 
     </FlexLayout>
 </toolkit:Popup>

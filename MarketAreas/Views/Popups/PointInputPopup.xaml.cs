@@ -4,10 +4,11 @@ using CommunityToolkit.Maui.Views;
 
 using VoronoiModel;
 using VoronoiModel.Services;
+using static System.Double;
 
 namespace MarketAreas.Views.Popups;
 
-public partial class PointInputPopup : Popup
+public partial class PointInputPopup
 {
 
 	private readonly Action<VoronoiPoint> addPointAction;
@@ -32,13 +33,12 @@ public partial class PointInputPopup : Popup
 			Name = name
 		};
 
-        double weight;
-        if (Double.TryParse(PointWeightEntry.Text, out weight))
+        if (TryParse(PointWeightEntry.Text, out var weight))
         {
 			point.Weight = weight;
         }
 
-        Debug.WriteLine(string.Format("Adding point {0}", point));
+        Debug.WriteLine($"Adding point {point}");
 		addPointAction(point);
 		ClearEntries();
 		Reset();
