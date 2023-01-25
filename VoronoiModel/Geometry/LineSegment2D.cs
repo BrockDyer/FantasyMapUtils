@@ -3,8 +3,8 @@ namespace VoronoiModel.Geometry
 {
 	public class LineSegment2D
 	{
-		private Point2D Start { get; }
-		private Point2D End { get; }
+		public Point2D Start { get; }
+		public Point2D End { get; }
 
 		public LineSegment2D(Point2D start, Point2D end)
 		{

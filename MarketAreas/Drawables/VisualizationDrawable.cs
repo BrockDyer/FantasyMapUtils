@@ -26,7 +26,7 @@ namespace MarketAreas.Drawables
             dirtyRect.Deconstruct(out x, out y, out width, out height);
             canvas.StrokeColor = Colors.Purple;
             canvas.StrokeSize = 4;
-            //canvas.DrawRectangle(dirtyRect.Left, dirtyRect.Top, width, height);
+            canvas.DrawRectangle(dirtyRect.Left, dirtyRect.Top, width, height);
 
             // Draw the image.
             //if (MapImage != null)
@@ -51,7 +51,15 @@ namespace MarketAreas.Drawables
             DrawPoints(canvas);
 
             // Draw voronoi lines and cells
-            _voronoiService.Visualize(canvas);
+            try
+            {
+                _voronoiService.Visualize(canvas);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+                Debug.WriteLine(e.StackTrace);
+            }
 
             // Draw optimal points
         }

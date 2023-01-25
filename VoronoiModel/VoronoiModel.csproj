@@ -14,6 +14,7 @@
     <None Remove="Geometry\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Ethereality.Dcel" Version="0.1.5" />
     <PackageReference Include="Microsoft.Maui.Graphics" Version="7.0.52" />
     <PackageReference Include="Microsoft.Maui.Graphics.Skia" Version="7.0.52" />
   </ItemGroup>

@@ -16,6 +16,7 @@ internal class Event
     protected Event(Point2D location)
     {
         Location = location;
+        IsValid = true;
     }
 }
 

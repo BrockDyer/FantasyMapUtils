@@ -13,7 +13,7 @@ using VoronoiModel.Services;
 
 namespace MarketAreas.Views;
 
-public partial class MainPage : ContentPage
+public partial class MainPage
 {
     //private readonly IVoronoiService _voronoiService;
 

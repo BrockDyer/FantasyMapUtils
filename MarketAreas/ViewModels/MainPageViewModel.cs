@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IImage = Microsoft.Maui.Graphics.IImage;
@@ -25,8 +26,7 @@ namespace MarketAreas.ViewModels
         /// <summary>
         /// A collection of voronoi points in the model.
         /// </summary>
-		public ObservableCollection<VoronoiPoint> VoronoiPoints { get; set; } =
-            new ObservableCollection<VoronoiPoint>();
+		public ObservableCollection<VoronoiPoint> VoronoiPoints { get; set; } = new();
 
         public Drawables.VisualizationDrawable VisualizationDrawable { get; }
         public Action InvalidateVisualization { get; set; }
@@ -49,21 +49,20 @@ namespace MarketAreas.ViewModels
         [RelayCommand]
         public void DisplayPointInputPopup(View anchor)
         {
-            var pointInputPopup = new PointInputPopup(AddVoronoiPoint);
-            pointInputPopup.Anchor = anchor; 
+	        var pointInputPopup = new PointInputPopup(AddVoronoiPoint)
+            {
+	            Anchor = anchor
+            };
             _popupService.ShowPopup(pointInputPopup);
         }
 
         /// <summary>
         /// Handle the Start button being clicked.
         /// </summary>
-        /// <param name="visualizationView">The GrahpicsView that contains the
-        /// visualization output.
-        /// </param>
         [RelayCommand]
         public void Start()
         {
-            // Initialize the voronoi centroids.
+	        // Initialize the voronoi centroids.
             var canvasDims = VisualizationDrawable.GetCanvasSize();
             _voronoiService.InitPoints((double)canvasDims.Item1,
                 (double)canvasDims.Item2,
@@ -71,6 +70,7 @@ namespace MarketAreas.ViewModels
                 (double)(canvasDims.Item4 + canvasDims.Item2));
 
             _voronoiService.PrintPoints();
+            _voronoiService.ComputeVoronoi();
             InvalidateVisualization();
         }
 

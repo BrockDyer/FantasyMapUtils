@@ -1,6 +1,6 @@
 ﻿namespace VoronoiModel.Geometry
 {
-	public class Point2D
+	public class Point2D : IEquatable<Point2D>
 	{
 		public double X { get; }
 		public double Y { get; }
@@ -20,13 +20,20 @@
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(X, Y);
+	        return HashCode.Combine(X, Y);
         }
 
         public override string ToString()
         {
             return $"({X}, {Y})";
         }
-    }
+
+        public bool Equals(Point2D? other)
+        {
+	        if (ReferenceEquals(null, other)) return false;
+	        if (ReferenceEquals(this, other)) return true;
+	        return X.Equals(other.X) && Y.Equals(other.Y);
+        }
+	}
 }
 

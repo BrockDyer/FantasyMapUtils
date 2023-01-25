@@ -168,16 +168,56 @@ public class BeachLine
     /// <param name="triple">The triple of points to search for.</param>
     /// <param name="sweepLine">The height of the sweep line.</param>
     /// <returns>The entry for the arc in the middle of the triple.</returns>
+    //public BeachLineEntry FindArcInMiddle(Tuple<Point2D, Point2D, Point2D> triple, double sweepLine)
+    //{
+    //    if (_beachLine.Count < 3)
+    //        throw new InvalidOperationException("Cannot find arc in middle with less than 3 arcs.");
+        
+    //    var start = 0;
+    //    var end = _beachLine.Count - 1;
+
+    //    var tripleLeftBreakpoint = ComputeBreakpoint(triple.Item1, triple.Item2, sweepLine);
+
+    //    // Function to check that the current state is a match.
+    //    bool IsMatch(Point2D left, Point2D center, Point2D right)
+    //    {
+    //        var leftMatch = left.Equals(triple.Item1);
+    //        var centerMatch = center.Equals(triple.Item2);
+    //        var rightMatch = right.Equals(triple.Item3);
+
+    //        return leftMatch && centerMatch && rightMatch;
+    //    }
+        
+    //    while (true)
+    //    {
+    //        var middle = (int)Math.Round((start + end) / 2d);
+
+    //        var middleArc = _beachLine[middle];
+
+    //        var leftArc = _beachLine[middle - 1];
+    //        var rightArc = _beachLine[middle + 1];
+
+    //        // If we have found the entry, return it
+    //        if (IsMatch(leftArc, middleArc, rightArc))
+    //        {
+    //            return new BeachLineEntry(middle, middleArc);
+    //        }
+
+    //        // Determine which way to search next.
+    //        var leftBreakpoint = ComputeBreakpoint(leftArc, middleArc, sweepLine);
+    //        if (tripleLeftBreakpoint.X <= leftBreakpoint.X)
+    //        {
+    //            end = middle;
+    //        }
+    //        else
+    //        {
+    //            start = middle;
+    //        }
+    //    }
+    //}
+
     public BeachLineEntry FindArcInMiddle(Tuple<Point2D, Point2D, Point2D> triple, double sweepLine)
     {
-        if (_beachLine.Count < 3)
-            throw new InvalidOperationException("Cannot find arc in middle with less than 3 arcs.");
-        
-        var start = 0;
-        var end = _beachLine.Count - 1;
-
-        var tripleLeftBreakpoint = ComputeBreakpoint(triple.Item1, triple.Item2, sweepLine);
-
         // Function to check that the current state is a match.
         bool IsMatch(Point2D left, Point2D center, Point2D right)
         {
@@ -187,33 +227,18 @@ public class BeachLine
 
             return leftMatch && centerMatch && rightMatch;
         }
-        
-        while (true)
+
+        var i = 1;
+        foreach (var t in GetTriples())
         {
-            var middle = (int)Math.Round((start + end) / 2d);
-
-            var middleArc = _beachLine[middle];
-
-            var leftArc = _beachLine[middle - 1];
-            var rightArc = _beachLine[middle + 1];
-
-            // If we have found the entry, return it
-            if (IsMatch(leftArc, middleArc, rightArc))
+            if (IsMatch(t.Item1, t.Item2, t.Item3))
             {
-                return new BeachLineEntry(middle, middleArc);
+                return new BeachLineEntry(i, t.Item2);
             }
-
-            // Determine which way to search next.
-            var leftBreakpoint = ComputeBreakpoint(leftArc, middleArc, sweepLine);
-            if (tripleLeftBreakpoint.X <= leftBreakpoint.X)
-            {
-                end = middle;
-            }
-            else
-            {
-                start = middle;
-            }
+            i += 1;
         }
+
+        throw new Exception("Could not find the middle arc :(");
     }
 
     /// <summary>
