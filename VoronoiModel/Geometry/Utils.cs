@@ -75,6 +75,19 @@ namespace VoronoiModel.Geometry
 			var radius = circle.Item2;
 			return new Point2D(center.X, center.Y + radius);
 		}
+		
+		/// <summary>
+		/// Calculate the angle of this line segment.
+		/// </summary>
+		/// <param name="segment">The line segment to get the angle of.</param>
+		/// <returns>The angle of incline.</returns>
+		public static double CalculateAngle(LineSegment2D segment)
+		{
+			var distanceX = segment.End.X - segment.Start.X;
+			var distanceY = segment.End.Y - segment.Start.Y;
+
+			return Math.Atan2(distanceY, distanceX);
+		}
 	}
 }
 

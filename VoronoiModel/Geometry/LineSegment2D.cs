@@ -194,6 +194,11 @@ namespace VoronoiModel.Geometry
 		{
 			return HashCode.Combine(Start, End);
 		}
+
+		public override string ToString()
+		{
+			return $"{Start} -> {End}";
+		}
 	}
 }
 

@@ -22,4 +22,7 @@
     <Folder Include="Services\" />
     <Folder Include="Geometry\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VoronoiLib\VoronoiLib.csproj" />
+  </ItemGroup>
 </Project>

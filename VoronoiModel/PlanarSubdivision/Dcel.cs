@@ -84,6 +84,14 @@ namespace VoronoiModel.PlanarSubdivision
 		/// </summary>
 		private Dcel() {}
 
+		private Dcel(Dictionary<Point2D, Vertex> vertices, Dictionary<Point2D, Dictionary<Point2D, HalfEdge>> halfEdges,
+			List<Face> faces)
+		{
+			Vertices = vertices;
+			HalfEdges = halfEdges;
+			Faces = faces;
+		}
+
 		/// <summary>
 		/// Get a half edge by its source and target vertex.
 		/// </summary>
@@ -247,6 +255,240 @@ namespace VoronoiModel.PlanarSubdivision
 
 			return dcel;
         }
+
+		/// <summary>
+		/// Create a doubly connected edge list to represent a planar subdivision of the plane given by the upper left
+		/// point and the lower right point. Constructs the DCEL using the provided segments.
+		/// </summary>
+		/// <param name="upperLeft">The upper left point of the bounding box.</param>
+		/// <param name="lowerRight">The lower right point of the bounding box.</param>
+		/// <param name="segments">The segments of the DCEL (not including bounding box segments).</param>
+		/// <returns>The constructed DCEL.</returns>
+		public static Dcel Create(Point2D upperLeft, Point2D lowerRight, IEnumerable<LineSegment2D> segments)
+		{
+			var vertices = new Dictionary<Point2D, Vertex>();
+			var edgesOnVertex = new Dictionary<Point2D, HashSet<LineSegment2D>>();
+			var halfEdges = new Dictionary<Point2D, Dictionary<Point2D, HalfEdge>>();
+			var faces = new List<Face>();
+
+			var upperRight = new Point2D(lowerRight.X, upperLeft.Y);
+			var lowerLeft = new Point2D(upperLeft.X, lowerRight.Y);
+			
+			var boundingBox = new[]
+			{
+				new LineSegment2D(upperLeft, upperRight),
+				new LineSegment2D(upperRight, lowerRight),
+				new LineSegment2D(lowerRight, lowerLeft),
+				new LineSegment2D(lowerLeft, upperLeft)
+			};
+
+			bool IsPointOnBoundingBox(Point2D point)
+			{
+				return boundingBox.Any(line => line.IsPointOn(point));
+			}
+			
+			// Establish the line segments that correspond to each vertex.
+			foreach (var (segment, point) in segments.SelectMany(segment => 
+				         new[] {Tuple.Create(segment, segment.Start), Tuple.Create(segment, segment.End) }))
+			{
+				if (IsPointOnBoundingBox(point)) continue;
+				
+				if (!edgesOnVertex.ContainsKey(point))
+				{
+					edgesOnVertex[point] = new HashSet<LineSegment2D>();
+				}
+				
+				// Convert segment so that it points out from the vertex.
+				var end = segment.Start.Equals(point) ? segment.End : segment.Start;
+				var segmentToUse = new LineSegment2D(point, end);
+				edgesOnVertex[point].Add(segmentToUse);
+			}
+
+			HalfEdge? FindEdgeIfExists(Point2D source, Point2D target)
+			{
+				if (!halfEdges.TryGetValue(source, out var targetToEdge)) return null;
+				return targetToEdge.TryGetValue(target, out var edge) ? edge : null;
+			}
+
+			void AddEdgeToMap(Point2D source, Point2D target, HalfEdge edge)
+			{
+				if (halfEdges.TryGetValue(source, out var targetsToEdges))
+				{
+					if (!targetsToEdges.ContainsKey(target)) targetsToEdges.Add(target, edge);
+
+					return;
+				}
+				halfEdges.Add(source, new Dictionary<Point2D, HalfEdge>());
+				halfEdges[source].Add(target, edge);
+			}
+			
+			// Construct HalfEdges and vertices
+			foreach (var target in edgesOnVertex.Keys)
+			{
+				var edges = edgesOnVertex[target].ToList();
+				edges.Sort(new RadialLineSegmentComparer());
+				var edgeCount = edges.Count;
+				HalfEdge? previousTwin = null;
+				HalfEdge? firstEdgeIn = null;
+				for (var i = 0; i < edgeCount; i++)
+				{
+					var line = edges[i];
+					var edgeIn = FindEdgeIfExists(line.End, target) ?? new HalfEdge(target);
+					var edgeInTwin = FindEdgeIfExists(target, line.End) ?? new HalfEdge(line.End);
+					
+					edgeIn.LinkTwin(edgeInTwin);
+					AddEdgeToMap(line.End, target, edgeIn);
+					AddEdgeToMap(target, line.End, edgeInTwin);
+
+					if (previousTwin is not null) edgeIn.LinkNext(previousTwin);
+					previousTwin = edgeInTwin;
+
+					firstEdgeIn ??= edgeIn;
+				}
+
+				if (previousTwin != null) firstEdgeIn?.LinkNext(previousTwin);
+			}
+			
+			// Center of bounding box.
+			var center = new Point2D((upperLeft.X + lowerRight.X) / 2, (upperLeft.Y + lowerRight.Y) / 2);
+
+			// Get all edges pointing towards oblivion
+			var exteriorPointsWithEdge = halfEdges.Values.SelectMany(d => d.Values)
+				.Where(edge => edge.Segment is not null && edge.Next is null && edge.Previous is not null)
+				.Select(edge => Tuple.Create(edge.TargetVertex.Point, edge.Segment))
+				.Union(new []{Tuple.Create<Point2D, LineSegment2D?>(upperLeft, null), Tuple.Create<Point2D, LineSegment2D?>(upperRight, null),
+					Tuple.Create<Point2D, LineSegment2D?>(lowerRight, null), Tuple.Create<Point2D, LineSegment2D?>(lowerLeft, null) })
+				.ToList();
+			
+			// Sort points radially around center of bounding box.
+			exteriorPointsWithEdge.Sort((x, y) =>
+			{
+				var angleX = Utils.CalculateAngle(new LineSegment2D(center, x.Item1));
+				var angleY = Utils.CalculateAngle(new LineSegment2D(center, y.Item1));
+
+				return Math.Sign(angleY - angleX);
+			});
+
+			// Construct and link exterior edges.
+			var exteriorPointCount = exteriorPointsWithEdge.Count;
+
+			HalfEdge? firstExterior = null;
+			HalfEdge? previousInterior = null;
+			HalfEdge? previousExterior = null;
+			for (var i = 0; i < exteriorPointCount; i++)
+			{
+				var (source, edgeTargetingSource) = exteriorPointsWithEdge[i];
+				var (target, edgeTargetingTarget) = exteriorPointsWithEdge[(i + 1) % exteriorPointCount];
+
+				var edge = new HalfEdge(target);
+				var twin = new HalfEdge(source);
+				
+				edge.LinkTwin(twin);
+				AddEdgeToMap(source, target, edge);
+				AddEdgeToMap(target, source, twin);
+
+				if (edgeTargetingSource is not null)
+				{
+					var halfEdgeTargetingSource = FindEdgeIfExists(edgeTargetingSource.Start, edgeTargetingSource.End);
+					if (halfEdgeTargetingSource?.Next is null)
+						halfEdgeTargetingSource?.LinkNext(edge);
+				}
+
+				if (edgeTargetingTarget is not null)
+				{
+					var halfEdgeTargetingTarget = FindEdgeIfExists(edgeTargetingTarget.Start, edgeTargetingTarget.End);
+					if (halfEdgeTargetingTarget is not null)
+					{
+						edge.LinkNext(halfEdgeTargetingTarget.Twin!);
+					}
+				}
+
+				if (previousInterior is not null && previousInterior.Next is null)
+				{
+					previousInterior.LinkNext(edge);
+				}
+
+				if (previousExterior is not null)
+				{
+					twin.LinkNext(previousExterior);
+				}
+
+				firstExterior ??= twin;
+
+				previousInterior = edge;
+				previousExterior = twin;
+			}
+			
+			if (previousExterior is not null) firstExterior?.LinkNext(previousExterior);
+			
+			// Create faces
+			var edgeQueue = new Queue<Tuple<HalfEdge, bool>>();
+			var visited = new HashSet<Tuple<Point2D?, Point2D>>();
+			
+			edgeQueue.Enqueue(Tuple.Create(halfEdges.Values.First().Values.First(), true));
+
+			// Function to construct the visited key from a half edge.
+			Tuple<Point2D?, Point2D> ConstructVisitedKey(HalfEdge edge)
+			{
+				return Tuple.Create(edge.SourceVertex?.Point, edge.TargetVertex.Point);
+			}
+			
+			// Check if this face has already been visited.
+			bool IsFaceVisited(HalfEdge start)
+			{
+				var current = start;
+				while (true)
+				{
+					var key = ConstructVisitedKey(current!);
+					if (visited.Contains(key))
+					{
+						return true;
+					}
+
+					if (current!.Next is null)
+					{
+						Console.WriteLine($"Next of {current} is null");
+					}
+					
+					current = current!.Next;
+					if (current?.Equals(start) ?? false) return false;
+				}
+			}
+
+			// BFS (kind of) the DCEL to construct faces.
+			while (edgeQueue.Count > 0)
+			{
+				var (current, checkFace) = edgeQueue.Dequeue();
+				
+				var key = ConstructVisitedKey(current);
+				if (visited.Contains(key)) continue;
+
+				if (current.Next is null)
+				{
+					Console.WriteLine($"Next is null on {current}");
+				}
+				
+				edgeQueue.Enqueue(Tuple.Create(current.Next!, false));
+				edgeQueue.Enqueue(Tuple.Create(current.Twin!, true));
+				
+				if (checkFace && !IsFaceVisited(current))
+				{
+					faces.Add(new Face(current));
+				}
+
+				visited.Add(key);
+
+			}
+
+			foreach (var face in faces)
+			{
+				face.LinkEdges();
+			}
+			
+			Console.WriteLine($"There are {faces.Count} faces in the DCEL");
+
+			return new Dcel(vertices, halfEdges, faces);
+		}
 
 		/// <summary>
 		/// Add a vertex at point v1 that is connected to the vertex at point v2.
@@ -470,6 +712,7 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <exception cref="NotImplementedException"></exception>
 		public void Visualize(ICanvas canvas)
 		{
+			Console.WriteLine("Drawing DCEL");
 			var colors = new[] {
 				"#cc6666", "#997a00", "#00f261", "#408cff", "#584359", "#d9a3a3", "#bfb68f",
 				"#4d665a", "#1a3866", "#f200c2", "#4c1400", "#f2e63d", "#1d7356", "#bfd9ff",
