@@ -53,12 +53,12 @@ namespace VoronoiModel
 					var start = new Point2D(edge.Start.X, edge.Start.Y);
 					var end = new Point2D(edge.End.X, edge.End.Y);
 					return new LineSegment2D(start, end);
-				}));
+				}).ToList());
 				
-				foreach (var face in _dcel.GetFaces())
-				{
-					Console.WriteLine(face);
-				}
+				// foreach (var face in _dcel.GetFaces())
+				// {
+				// 	Console.WriteLine(face);
+				// }
 			}
 			catch (Exception e)
 			{
@@ -147,7 +147,7 @@ namespace VoronoiModel
 				return;
 			}
 			
-			// const string color = "#f54266";
+			// const string color = "#FFFFFF";
 			// foreach(var line in _voronoiEdges)
 			// {
 			// 	var source = new Point2D(line.Start.X, line.Start.Y);

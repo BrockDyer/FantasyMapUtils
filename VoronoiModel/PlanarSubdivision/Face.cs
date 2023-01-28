@@ -32,6 +32,42 @@ namespace VoronoiModel.PlanarSubdivision
 		}
 
 		/// <summary>
+		/// Check if this face is an external face. If the edges proceed in a clockwise manner, it is an
+		/// external face.
+		/// </summary>
+		/// <returns>True if this face is external.</returns>
+		public bool IsFaceExternal()
+		{
+			var lag = Edge;
+			var next = Edge.Next!;
+			while (!next.Equals(Edge))
+			{
+				var a = lag.SourceVertex!.Point;
+				var b = lag.TargetVertex.Point;
+				var c = next.TargetVertex.Point;
+
+				var u = new Vector(b.X - a.X, b.Y - a.Y);
+				var v = new Vector(c.X - b.X, c.Y - b.Y);
+
+				var crossProduct = u.Cross2D(v);
+				var z = crossProduct.Get(2);
+				switch (z)
+				{
+					case < 0:
+						return false;
+					case > 0:
+						return true;
+					default:
+						lag = next;
+						next = lag.Next!;
+						break;
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
 		/// Check if a given point vector is contained within this face. Using the logic that a point is within a
 		/// polygon if a horizontal ray shot from the point intersects with an odd number of edges. A point is also
 		/// inside the face if it is on a boundary segment of the face.

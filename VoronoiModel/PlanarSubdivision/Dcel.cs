@@ -264,9 +264,9 @@ namespace VoronoiModel.PlanarSubdivision
 		/// <param name="lowerRight">The lower right point of the bounding box.</param>
 		/// <param name="segments">The segments of the DCEL (not including bounding box segments).</param>
 		/// <returns>The constructed DCEL.</returns>
-		public static Dcel Create(Point2D upperLeft, Point2D lowerRight, IEnumerable<LineSegment2D> segments)
+		public static Dcel Create(Point2D upperLeft, Point2D lowerRight, List<LineSegment2D> segments)
 		{
-			var vertices = new Dictionary<Point2D, Vertex>();
+			// var vertices = new Dictionary<Point2D, Vertex>();
 			var edgesOnVertex = new Dictionary<Point2D, HashSet<LineSegment2D>>();
 			var halfEdges = new Dictionary<Point2D, Dictionary<Point2D, HalfEdge>>();
 			var faces = new List<Face>();
@@ -291,6 +291,7 @@ namespace VoronoiModel.PlanarSubdivision
 			foreach (var (segment, point) in segments.SelectMany(segment => 
 				         new[] {Tuple.Create(segment, segment.Start), Tuple.Create(segment, segment.End) }))
 			{
+				// We will handle edges passing straight through later.
 				if (IsPointOnBoundingBox(point)) continue;
 				
 				if (!edgesOnVertex.ContainsKey(point))
@@ -302,6 +303,19 @@ namespace VoronoiModel.PlanarSubdivision
 				var end = segment.Start.Equals(point) ? segment.End : segment.Start;
 				var segmentToUse = new LineSegment2D(point, end);
 				edgesOnVertex[point].Add(segmentToUse);
+			}
+
+			var segmentsStraightThrough = segments.Where(s =>
+				IsPointOnBoundingBox(s.Start) && IsPointOnBoundingBox(s.End));
+			
+			// Handle edges passing straight through.
+			foreach (var segment in segmentsStraightThrough)
+			{
+				var edge = new HalfEdge(segment.Start);
+				var twin = new HalfEdge(segment.End);
+				edge.LinkTwin(twin);
+				AddEdgeToMap(segment.End, segment.Start, edge);
+				AddEdgeToMap(segment.Start, segment.End, twin);
 			}
 
 			HalfEdge? FindEdgeIfExists(Point2D source, Point2D target)
@@ -352,14 +366,18 @@ namespace VoronoiModel.PlanarSubdivision
 			// Center of bounding box.
 			var center = new Point2D((upperLeft.X + lowerRight.X) / 2, (upperLeft.Y + lowerRight.Y) / 2);
 
+			var mappedSegmentsStraightThrough = segments.Where(s => IsPointOnBoundingBox(s.Start) && IsPointOnBoundingBox(s.End)).SelectMany(s =>
+				new [] { Tuple.Create<Point2D, LineSegment2D?>(s.Start, new LineSegment2D(s.End, s.Start)), Tuple.Create<Point2D, LineSegment2D?>(s.End, s) });
+
 			// Get all edges pointing towards oblivion
 			var exteriorPointsWithEdge = halfEdges.Values.SelectMany(d => d.Values)
 				.Where(edge => edge.Segment is not null && edge.Next is null && edge.Previous is not null)
 				.Select(edge => Tuple.Create(edge.TargetVertex.Point, edge.Segment))
 				.Union(new []{Tuple.Create<Point2D, LineSegment2D?>(upperLeft, null), Tuple.Create<Point2D, LineSegment2D?>(upperRight, null),
 					Tuple.Create<Point2D, LineSegment2D?>(lowerRight, null), Tuple.Create<Point2D, LineSegment2D?>(lowerLeft, null) })
+				.Union(mappedSegmentsStraightThrough)
 				.ToList();
-			
+
 			// Sort points radially around center of bounding box.
 			exteriorPointsWithEdge.Sort((x, y) =>
 			{
@@ -419,6 +437,7 @@ namespace VoronoiModel.PlanarSubdivision
 				previousExterior = twin;
 			}
 			
+			if (previousInterior?.Next is null) previousInterior?.LinkNext(firstExterior?.Twin);
 			if (previousExterior is not null) firstExterior?.LinkNext(previousExterior);
 			
 			// Create faces
@@ -473,7 +492,14 @@ namespace VoronoiModel.PlanarSubdivision
 				
 				if (checkFace && !IsFaceVisited(current))
 				{
-					faces.Add(new Face(current));
+					var newFace = new Face(current);
+					// Don't add external faces to the DCEL.
+					if (!newFace.IsFaceExternal())
+						faces.Add(new Face(current));
+					else
+					{
+						Console.WriteLine("Skipped adding an external face");
+					}
 				}
 
 				visited.Add(key);
@@ -486,6 +512,21 @@ namespace VoronoiModel.PlanarSubdivision
 			}
 			
 			Console.WriteLine($"There are {faces.Count} faces in the DCEL");
+
+			var vertices = new Dictionary<Point2D, Vertex>();
+			foreach (var halfEdge in halfEdges.Values.SelectMany(d => d.Values))
+			{
+				var targetPoint = halfEdge.TargetVertex.Point;
+				var target = halfEdge.TargetVertex;
+				if (vertices.ContainsKey(targetPoint))
+				{
+					halfEdge.TargetVertex = vertices[targetPoint];
+				}
+				else
+				{
+					vertices.Add(targetPoint, target);
+				}
+			}
 
 			return new Dcel(vertices, halfEdges, faces);
 		}
@@ -722,73 +763,29 @@ namespace VoronoiModel.PlanarSubdivision
 				"#4c3913", "#65b359", "#0077b3"
 			};
 
-			const string emptyFaceColor = "#530059";
+			const string vertexColor = "#530059";
 
             const double epsilon = 0.01;
-            Dictionary<Face, int> faceIndexMap = new();
-            Dictionary<Face, Point2D> faceCentroidMap = new();
-
-			var i = 0;
-			foreach(var face in Faces)
-			{
-				faceIndexMap[face] = i;
-				faceCentroidMap[face] = face.Centroid();
-				i += 1;
-			}
-
-			HashSet<HalfEdge> drawn = new();
-			foreach(var edge in HalfEdges.Values.SelectMany(map => map.Values))
-			{
-				// Already drawn
-				if (drawn.Contains(edge)) continue;
-
-				// Draw the edge.
-				var twin = edge.Twin;
-				if (twin is null)
-				{
-					Debug.WriteLine("Encountered a half edge without a twin in a constructed DCEL", "Error");
-					continue;
-				}
-
-                var target = edge.TargetVertex.Point;
-				var source = edge.SourceVertex?.Point;
-
-				if (source is null)
-				{
-					Debug.WriteLine($"Edge {edge}, has no source!", "Error");
-					continue;
-				}
-
-				Face? face;
-				var direction = 1;
-				if (edge.IncidentFace is not null)
-				{
-					face = edge.IncidentFace;
-				} else if (twin.IncidentFace is not null)
-				{
-					face = twin.IncidentFace;
-					direction *= -1;
-				} else
-				{
-					Debug.WriteLine("Encountered edge that has no face on either side.", "Error");
-					continue;
-				}
-
-				var centroid = faceCentroidMap[face];
-
-				var faceColor = (edge.IncidentFace is null) ? emptyFaceColor :
-					colors[faceIndexMap[face] % colors.Length];
-				var twinFaceColor = (twin.IncidentFace is null) ? emptyFaceColor:
-					colors[faceIndexMap[face] % colors.Length];
-
-				DrawSegment(source, target, centroid, direction * epsilon, faceColor, canvas);
-				DrawSegment(twin.SourceVertex?.Point ?? new Point2D(0, 0), twin.TargetVertex.Point,
-					centroid, -1 * direction * epsilon, twinFaceColor, canvas);
-
-                // Update drawn set.
-                drawn.Add(edge);
-				drawn.Add(twin);
-			}
+            var i = 0;
+            foreach (var face in Faces)
+            {
+	            var centroid = face.Centroid();
+	            var color = colors[i % colors.Length];
+	            foreach (var edge in face.GetFaceEdges())
+	            {
+		            var source = edge.SourceVertex!.Point;
+		            var target = edge.TargetVertex.Point;
+		            DrawSegment(source, target, centroid, epsilon, color, canvas);
+	            }
+	            i += 1;
+            }
+            
+            canvas.StrokeColor = Colors.White;
+            canvas.FillColor = Colors.White;
+            foreach (var pf in Vertices.Keys.Select(v => new PointF((float)v.X, (float)v.Y)))
+            {
+	            canvas.FillCircle(pf, 6);
+            }
 		}
 
 		private static void DrawSegment(Point2D source, Point2D target, Point2D centroid,
