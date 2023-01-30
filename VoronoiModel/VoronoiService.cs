@@ -19,10 +19,12 @@ namespace VoronoiModel
 		// private Dcel<Bisector, Point2D>? _dcel;
 		private Dcel? _dcel;
 		private LinkedList<VEdge>? _voronoiEdges;
+		private Dictionary<Point2D, Face> siteFaceMap;
 
 		public VoronoiService()
 		{
 			Debug.WriteLine("Constructing VoronoiService");
+			siteFaceMap = new Dictionary<Point2D, Face>();
 		}
 
 		public void AddPoint(VoronoiPoint point)
@@ -54,6 +56,16 @@ namespace VoronoiModel
 					var end = new Point2D(edge.End.X, edge.End.Y);
 					return new LineSegment2D(start, end);
 				}).ToList());
+
+				foreach (var site in sites.Select(s => new Point2D(s.X, s.Y)))
+				{
+					foreach (var face in _dcel.GetFaces().Where(face => face.ContainsPoint(site)))
+					{
+						siteFaceMap.Add(site, face);
+						Console.WriteLine($"Voronoi Site at {site} lies within the following face: \n{face}");
+						break;
+					}
+				}
 				
 				// foreach (var face in _dcel.GetFaces())
 				// {
