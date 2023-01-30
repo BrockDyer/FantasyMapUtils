@@ -25,7 +25,8 @@ public class VoronoiModelTest
         };
 
         var voronoiService = new VoronoiService();
-        voronoiService.InitPoints(upperLeft, lowerRight, points);
+        voronoiService.InitBounds(minX, minY, maxX, maxY);
+        voronoiService.InitPoints(points);
         voronoiService.ComputeVoronoi();
 
         SkiaBitmapExportContext skiaBitmapExportContext= new(maxX - minX, maxY - minY, 1);

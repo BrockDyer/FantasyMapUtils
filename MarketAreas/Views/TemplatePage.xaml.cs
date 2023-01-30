@@ -1,6 +1,8 @@
-﻿namespace MarketAreas.Views;
+﻿using Microsoft.Maui.Accessibility;
 
-public partial class TemplatePage : ContentPage
+namespace MarketAreas.Views;
+
+public partial class TemplatePage
 {
     int count = 0;
 

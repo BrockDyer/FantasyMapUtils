@@ -1,8 +1,6 @@
-﻿using MarketAreas.Services;
+﻿namespace MarketAreas;
 
-namespace MarketAreas;
-
-public partial class App : Application
+public partial class App
 {
     public App(IServiceProvider provider)
     {

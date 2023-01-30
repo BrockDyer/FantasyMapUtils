@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IImage = Microsoft.Maui.Graphics.IImage;
@@ -8,6 +7,8 @@ using VoronoiModel;
 using VoronoiModel.Services;
 using MarketAreas.Views.Popups;
 using MarketAreas.Services;
+using OptimizationLib;
+using VoronoiModel.Geometry;
 
 namespace MarketAreas.ViewModels
 {
@@ -15,6 +16,7 @@ namespace MarketAreas.ViewModels
 	{
 		private readonly IImageLoadingService _imageLoadingService;
 		private readonly IVoronoiService _voronoiService;
+		private readonly IOptimizationAlgorithm _optimizationAlgorithm;
         private readonly IPopupService _popupService;
 
         /// <summary>
@@ -33,11 +35,13 @@ namespace MarketAreas.ViewModels
 
 		public MainPageViewModel(IImageLoadingService imageLoadingService,
 			IVoronoiService voronoiService,
-            IPopupService popupService)
+            IPopupService popupService,
+			IOptimizationAlgorithm optimizationAlgorithm)
 		{
 			_imageLoadingService = imageLoadingService;
 			_voronoiService = voronoiService;
             _popupService = popupService;
+            _optimizationAlgorithm = optimizationAlgorithm;
 
             VisualizationDrawable = new Drawables.VisualizationDrawable(_voronoiService);
 		}
@@ -62,16 +66,56 @@ namespace MarketAreas.ViewModels
         [RelayCommand]
         private void Start()
         {
-	        // Initialize the voronoi centroids.
-            var canvasDims = VisualizationDrawable.GetCanvasSize();
-            _voronoiService.InitPoints((double)canvasDims.Item1,
-                (double)canvasDims.Item2,
-                (double)(canvasDims.Item3 + canvasDims.Item1),
-                (double)(canvasDims.Item4 + canvasDims.Item2));
+	        try
+	        {
+		        // Initialize the voronoi region.
+		        var (minX, minY, item3, item4) = VisualizationDrawable.GetCanvasSize();
+		        var maxX = item3 + minX;
+		        var maxY = item4 + minY;
+		        _voronoiService.InitBounds(minX, minY, maxX, maxY);
+		        // _voronoiService.InitPoints((double)canvasDims.Item1,
+		        //     (double)canvasDims.Item2,
+		        //     (double)(canvasDims.Item3 + canvasDims.Item1),
+		        //     (double)(canvasDims.Item4 + canvasDims.Item2));
 
-            _voronoiService.PrintPoints();
-            _voronoiService.ComputeVoronoi();
-            InvalidateVisualization();
+		        // _voronoiService.PrintPoints();
+		        // _voronoiService.ComputeVoronoi();
+
+		        // Perform the optimization
+		        var minBounds = new List<double>();
+		        var maxBounds = new List<double>();
+		        for (var i = 0; i < _voronoiService.GetPoints().Count * 2; i += 2)
+		        {
+			        minBounds.Add(minX);
+			        minBounds.Add(minY);
+			        
+			        maxBounds.Add(maxX);
+			        maxBounds.Add(maxY);
+		        }
+
+		        var solution = _optimizationAlgorithm.Solve(new Random(), minBounds, maxBounds, _voronoiService.Score);
+		        var solutionPoints = new List<Point2D>();
+		        for (var i = 0; i < solution.Count; i += 2)
+		        {
+			        solutionPoints.Add(new Point2D(solution[i], solution[i + 1]));
+		        }
+		        
+		        Console.Write("Solution found at: ");
+		        foreach (var point in solutionPoints)
+		        {
+			        Console.Write($"{point} ");
+		        }
+		        Console.WriteLine($"\nSolution score: {_voronoiService.Score(solution)}");
+
+		        _voronoiService.InitPoints(solutionPoints.ToArray());
+	        }
+	        catch (Exception e)
+	        {
+		        Console.WriteLine(e.Message);
+		        Console.WriteLine(e.StackTrace);
+	        }
+
+	        InvalidateVisualization();
         }
 
         // This feels clunky.

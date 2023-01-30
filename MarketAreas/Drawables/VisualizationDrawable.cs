@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using VoronoiModel;
+﻿using System.Diagnostics;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using VoronoiModel.Services;
-using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace MarketAreas.Drawables
 {

@@ -1,9 +1,8 @@
-using Ethereality.DoublyConnectedEdgeList;
 using VoronoiModel.Geometry;
 
 namespace VoronoiModel.FortuneVoronoi;
 
-public class Bisector : IEdge<Point2D>
+public class Bisector
 {
     /// <summary>
     /// Represents the point at infinity.

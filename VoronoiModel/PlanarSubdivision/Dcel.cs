@@ -498,7 +498,7 @@ namespace VoronoiModel.PlanarSubdivision
 						faces.Add(new Face(current));
 					else
 					{
-						Console.WriteLine("Skipped adding an external face");
+						// Console.WriteLine("Skipped adding an external face");
 					}
 				}
 
@@ -511,7 +511,7 @@ namespace VoronoiModel.PlanarSubdivision
 				face.LinkEdges();
 			}
 			
-			Console.WriteLine($"There are {faces.Count} faces in the DCEL");
+			// Console.WriteLine($"There are {faces.Count} faces in the DCEL");
 
 			var vertices = new Dictionary<Point2D, Vertex>();
 			foreach (var halfEdge in halfEdges.Values.SelectMany(d => d.Values))

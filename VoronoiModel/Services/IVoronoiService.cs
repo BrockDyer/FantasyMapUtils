@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 using VoronoiModel;
+using VoronoiModel.Geometry;
 using VoronoiModel.PlanarSubdivision;
 
 namespace VoronoiModel.Services
@@ -28,6 +29,14 @@ namespace VoronoiModel.Services
         public void InitPoints(double minX, double minY, double maxX,
 			double maxY);
 
+		/// <summary>
+		/// Initialize the points given a list of points.
+		/// </summary>
+		/// <param name="points">The list of points.</param>
+		public void InitPoints(params Point2D[] points);
+
+		public void InitBounds(double minX, double minY, double maxX, double maxY);
+
         /// <summary>
         /// Compute the voronoi cells for each point.
         /// </summary>
@@ -40,8 +49,14 @@ namespace VoronoiModel.Services
 		/// <param name="point">A centroid in the voronoi model.</param>
 		/// <param name="sampleSize">The number of points to sample.</param>
 		/// <returns></returns>
-		public List<Tuple<double, double>> SamplePointsWithinCell(
-			VoronoiPoint point, int sampleSize);
+		public List<Point2D> SamplePointsWithinCell(Point2D point, int sampleSize);
+
+		/// <summary>
+		/// Score the voronoi model according to a fitness function.
+		/// </summary>
+		/// <param name="vector">The vector to score.</param>
+		/// <returns>The score of the model.</returns>
+		public double Score(List<double> vector);
 
 		/// <summary>
 		/// For debuggin purposes.

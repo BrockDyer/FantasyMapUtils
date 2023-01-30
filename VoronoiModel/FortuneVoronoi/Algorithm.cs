@@ -1,6 +1,6 @@
 using System.Diagnostics;
-using Ethereality.DoublyConnectedEdgeList;
 using VoronoiModel.Geometry;
+using VoronoiModel.PlanarSubdivision;
 
 namespace VoronoiModel.FortuneVoronoi;
 
@@ -13,7 +13,7 @@ public static class Algorithm
     /// <param name="lowerRight">The lower right corner of the bounding box.</param>
     /// <param name="sites">The voronoi sites.</param>
     /// <returns>A doubly connected edge list that represents the planar subdivision (Voronoi Diagram)</returns>
-    public static Dcel<Bisector, Point2D> ComputeVoronoi(Point2D upperLeft, Point2D lowerRight, IEnumerable<Point2D> sites)
+    public static Dcel ComputeVoronoi(Point2D upperLeft, Point2D lowerRight, IEnumerable<Point2D> sites)
     {
         var eventQueue = new PriorityQueue<Event, double>();
 
@@ -226,8 +226,7 @@ public static class Algorithm
         }
 
         // Construct the DCEL from the bisectors.
-        var factory = new DcelFactory<Bisector, Point2D>(new BisectorComparer());
-        var dcel = factory.FromShape(bisectors.Values);
+        var dcel = Dcel.Create(upperLeft, lowerRight, bisectors.Values.Select(b => new LineSegment2D(b.PointA, b.PointB)).ToList());
         return dcel;
     }
 }
