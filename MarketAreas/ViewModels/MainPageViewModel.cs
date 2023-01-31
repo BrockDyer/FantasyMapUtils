@@ -77,37 +77,39 @@ namespace MarketAreas.ViewModels
 		        //     (double)canvasDims.Item2,
 		        //     (double)(canvasDims.Item3 + canvasDims.Item1),
 		        //     (double)(canvasDims.Item4 + canvasDims.Item2));
+		        _voronoiService.InitPoints(minX, minY, maxX, maxY);
+		        _voronoiService.ComputeVoronoi();
 
 		        // _voronoiService.PrintPoints();
 		        // _voronoiService.ComputeVoronoi();
 
 		        // Perform the optimization
-		        var minBounds = new List<double>();
-		        var maxBounds = new List<double>();
-		        for (var i = 0; i < _voronoiService.GetPoints().Count * 2; i += 2)
-		        {
-			        minBounds.Add(minX);
-			        minBounds.Add(minY);
-			        
-			        maxBounds.Add(maxX);
-			        maxBounds.Add(maxY);
-		        }
-
-		        var solution = _optimizationAlgorithm.Solve(new Random(), minBounds, maxBounds, _voronoiService.Score);
-		        var solutionPoints = new List<Point2D>();
-		        for (var i = 0; i < solution.Count; i += 2)
-		        {
-			        solutionPoints.Add(new Point2D(solution[i], solution[i + 1]));
-		        }
-		        
-		        Console.Write("Solution found at: ");
-		        foreach (var point in solutionPoints)
-		        {
-			        Console.Write($"{point} ");
-		        }
-		        Console.WriteLine($"\nSolution score: {_voronoiService.Score(solution)}");
-
-		        _voronoiService.InitPoints(solutionPoints.ToArray());
+		        // var minBounds = new List<double>();
+		        // var maxBounds = new List<double>();
+		        // for (var i = 0; i < _voronoiService.GetPoints().Count * 2; i += 2)
+		        // {
+			       //  minBounds.Add(minX);
+			       //  minBounds.Add(minY);
+			       //  
+			       //  maxBounds.Add(maxX);
+			       //  maxBounds.Add(maxY);
+		        // }
+		        //
+		        // var solution = _optimizationAlgorithm.Solve(new Random(), minBounds, maxBounds, _voronoiService.Score);
+		        // var solutionPoints = new List<Point2D>();
+		        // for (var i = 0; i < solution.Count; i += 2)
+		        // {
+			       //  solutionPoints.Add(new Point2D(solution[i], solution[i + 1]));
+		        // }
+		        //
+		        // Console.Write("Solution found at: ");
+		        // foreach (var point in solutionPoints)
+		        // {
+			       //  Console.Write($"{point} ");
+		        // }
+		        // Console.WriteLine($"\nSolution score: {_voronoiService.Score(solution)}");
+		        //
+		        // _voronoiService.InitPoints(solutionPoints.ToArray());
 	        }
 	        catch (Exception e)
 	        {
