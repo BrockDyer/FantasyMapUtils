@@ -41,6 +41,10 @@ within the bounding box properly and missing some of the vertex events in the ev
 Again prioritizing a working solution, I chose to use an external implementation for Fortune's Algorithm. This implementation returned a list of line segments that represented the bisectors between each site. I was able to take these segments and construct a doubly connected edge list
 that allowed me to visualize each cell, and more importantly, query if a point was in a given cell.
 
+![Voronoi Visualization 1](VoronoiImages/1.png)
+![Voronoi Visualization 2](VoronoiImages/2.png)
+![Voronoi Visualization 3](VoronoiImages/3.png)
+
 ### Optimization - Score Function
 I ran short on time implementing the optimization routine and found that the sampling process that I had envisioned originally would require triangulation of each Voronoi Cell. Since I did not have time to thoroughly investigate that, I decided to just sample points within an approximation of the cell, and reject any point that was not contained inside it. This unfortunately leads to very random evaluations of any given voronoi diagram in terms of fitness for placing a market there. 
 
