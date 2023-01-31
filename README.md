@@ -56,6 +56,9 @@ In the future I would like to return to this and see if it is possible to improv
 ## Final Thoughts
 Through this project, I feel like I gained a very proficient understanding of voronoi diagrams and Fortune's Algorithm (despite the bugs in my implementation). I also got a chance to learn first-hand the importance of properly defining a scoring metric for metaheuristic optimization, which is valuable as in previous classes these metrics were always given to me.
 
+## Project Demo and Presentation
+https://youtu.be/3SgrUZ4pDR8
+
 ## References:
 - Dr. K. Umadevi, Optimizing Rural Dealers location – A Voronoi Approach. International
 Journal of Civil Engineering and Technology, 9(8), 2018, pp. 879-886. http://
