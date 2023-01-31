@@ -61,6 +61,8 @@ In the future I would like to return to this and see if it is possible to improv
 Through this project, I feel like I gained a very proficient understanding of voronoi diagrams and Fortune's Algorithm (despite the bugs in my implementation). I also got a chance to learn first-hand the importance of properly defining a scoring metric for metaheuristic optimization, which is valuable as in previous classes these metrics were always given to me.
 
 ## Project Demo and Presentation
+Apolgies for the watermark, I needed to edit multiple clips together and the software I found lied about the watermark.
+
 https://youtu.be/3SgrUZ4pDR8
 
 ## References:
